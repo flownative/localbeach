@@ -13,5 +13,5 @@ build:
     - GOOS=darwin GOARCH=amd64 go build -ldflags="-X version.version=${APP_VERSION}" -o beach
   artifacts:
     paths:
-      - beach
+      - cmd/beach/beach
     expire_in: '1 day'
