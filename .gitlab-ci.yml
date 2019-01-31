@@ -10,8 +10,8 @@ build:
   script:
     - cd cmd/beach
     - export APP_VERSION=$(git describe --always --long --dirty)
-    - GOOS=darwin GOARCH=amd64 go build -ldflags="-X version.version=${APP_VERSION}" -o beach
+    - GOOS=darwin GOARCH=amd64 go build -ldflags="-X gitlab.com/flownative/localbeach/pkg/version.Version=${APP_VERSION}" -o beach
   artifacts:
     paths:
       - cmd/beach/beach
-    expire_in: '1 day'
+    expire_in: '1 month'
