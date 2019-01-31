@@ -1,4 +1,4 @@
 package version
 
-// VERSION is provided via ldflags
-var VERSION = "dev"
+// Version is provided via ldflags
+var Version = "dev"

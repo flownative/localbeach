@@ -27,9 +27,9 @@ func init() {
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the version number of Bbueach",
+	Short: "Print the version number of Beach",
 	Long:  `If version numbers are important to you, this command will be your favorite: it displays a version!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Beach CLI %s\n", version.VERSION)
+		fmt.Printf("Beach CLI %s\n", version.Version)
 	},
 }
