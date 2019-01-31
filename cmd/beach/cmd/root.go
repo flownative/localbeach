@@ -17,31 +17,28 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/logrusorgru/aurora"
-	"os"
-
-	homedir "github.com/mitchellh/go-homedir"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
+	"os"
 )
 
 var cfgFile string
 
-var VERSION = "dev"
-
 var rootCmd = &cobra.Command{
 	Use:   "beach",
 	Short: "Beach and Local Beach support for the command line",
-	Long:  fmt.Sprintf(`%s
-"beach" is the command line tool for managing Beach cloud projects 
-as well as projects in Local Beach.
+	Long: `
+888                             888      
+888                             888      
+888                             888      
+88888b.  .d88b.  8888b.  .d8888b88888b.  
+888 "88bd8P  Y8b    "88bd88P"   888 "88b 
+888  88888888888.d888888888     888  888 
+888 d88PY8b.    888  888Y88b.   888  888 
+88888P"  "Y8888 "Y888888 "Y8888P888  888
 
-Local Beach is a Docker-based local development environment
-for Neos and Flow projects. In addition, it provides tools for
-synchronizing with and deploying to Flownative Beach instances.
-
-For more information about Beach and Local Beach see
-https://www.flownative.com/beach`, aurora.Bold("beach " + VERSION)),
+Beach is the tool for managing projects 
+in Beach and Local Beach.`,
 }
 
 func Execute() {
@@ -53,27 +50,11 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.beach.yaml)")
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	log.SetFormatter(&log.TextFormatter{
+		DisableTimestamp: true,
+		DisableLevelTruncation: true,
+	})
 }
 
 func initConfig() {
-	if cfgFile != "" {
-		viper.SetConfigFile(cfgFile)
-	} else {
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".beach")
-	}
-
-	viper.AutomaticEnv()
-
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
-	}
 }

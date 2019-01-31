@@ -29,4 +29,3 @@ func getLocalBeachDockerComposePathAndFilename(projectPath string) (path string)
 func getNormalizedPath(path string) string {
 	return strings.TrimRight(path, "/") + "/"
 }
-

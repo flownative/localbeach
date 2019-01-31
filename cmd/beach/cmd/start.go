@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -24,8 +25,8 @@ import (
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "Start the Local Beach instance in the current directory.",
-	Long: "",
+	Short: "Start the Local Beach instance in the current directory",
+	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		run()
 	},
@@ -39,16 +40,19 @@ func init() {
 func run() {
 	workingDirectory, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+		return
 	}
 	flowRootPath, err := findFlowRootPathStartingFrom(workingDirectory)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
+		return
 	}
 
 	localBeachFolderPath := getLocalBeachDockerComposePathAndFilename(flowRootPath)
 	if _, err := os.Stat(localBeachFolderPath); os.IsNotExist(err) {
-		fmt.Println("We found a Flow or Neos installation but no Local Beach configuration, please run 'beach local:init' to get the initial configuration.")
+		log.Error("I found a Flow installation but no Local Beach configuration. Please run 'beach local:init' to create the initial configuration.")
+		return
 	}
 
 	fmt.Printf("The Flow root path is: %s", localBeachFolderPath)

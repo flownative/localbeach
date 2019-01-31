@@ -13,13 +13,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-// Beach and Local Beach support for the command line.
-package main
+package cmd
 
 import (
-	"gitlab.com/flownative/localbeach/cmd/beach/cmd"
+	"fmt"
+	"gitlab.com/flownative/localbeach/pkg/version"
+	"github.com/spf13/cobra"
 )
 
-func main() {
-	cmd.Execute()
+func init() {
+	rootCmd.AddCommand(versionCmd)
+}
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version number of Bbueach",
+	Long:  `If version numbers are important to you, this command will be your favorite: it displays a version!`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("Beach CLI %s\n", version.VERSION)
+	},
 }
