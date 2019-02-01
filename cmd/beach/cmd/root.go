@@ -37,8 +37,7 @@ var rootCmd = &cobra.Command{
 888 d88PY8b.    888  888Y88b.   888  888 
 88888P"  "Y8888 "Y888888 "Y8888P888  888
 
-Beach is the tool for managing projects 
-in Beach and Local Beach.`,
+Beach is the tool for managing projects in Beach and Local Beach.`,
 }
 
 func Execute() {
@@ -53,7 +52,9 @@ func init() {
 	log.SetFormatter(&log.TextFormatter{
 		DisableTimestamp: true,
 		DisableLevelTruncation: true,
+
 	})
+	log.SetLevel(log.DebugLevel)
 }
 
 func initConfig() {

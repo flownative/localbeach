@@ -16,10 +16,8 @@
 package cmd
 
 import (
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 // startCmd represents the start command
@@ -38,22 +36,10 @@ func init() {
 }
 
 func run() {
-	workingDirectory, err := os.Getwd()
+	projectRootPath, err := detectProjectRootPathFromWorkingDir()
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	flowRootPath, err := findFlowRootPathStartingFrom(workingDirectory)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	localBeachFolderPath := getLocalBeachDockerComposePathAndFilename(flowRootPath)
-	if _, err := os.Stat(localBeachFolderPath); os.IsNotExist(err) {
-		log.Error("I found a Flow installation but no Local Beach configuration. Please run 'beach local:init' to create the initial configuration.")
-		return
-	}
-
-	fmt.Printf("The Flow root path is: %s", localBeachFolderPath)
+	log.Debugf("Detected project root path at %s", projectRootPath)
 }
