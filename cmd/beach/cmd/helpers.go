@@ -3,8 +3,10 @@ package cmd
 import (
 	"errors"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"os"
 	"path"
+	"strings"
 )
 
 func detectProjectRootPathFromWorkingDir() (rootPath string, err error) {
@@ -31,4 +33,26 @@ func detectProjectRootPath(currentPath string) (projectRootPath string, err erro
 	}
 
 	return detectProjectRootPath(path.Dir(projectRootPath))
+}
+
+func loadLocalBeachEnvironment(projectRootPath string) (err error) {
+	envPathAndFilename := projectRootPath + "/.localbeach.dist.env"
+	if _, err := os.Stat(envPathAndFilename); err == nil {
+
+		source, err := ioutil.ReadFile(envPathAndFilename)
+		if err != nil {
+			return errors.New("failed loading environment file " + envPathAndFilename + ": " + err.Error())
+		}
+
+		for _, line := range strings.Split(string(source), "\n") {
+			trimmedLine := strings.TrimSpace(line)
+			if len(trimmedLine) > 0 && !strings.HasPrefix(trimmedLine, "#") {
+				nameAndValue := strings.Split(trimmedLine, "=")
+				if err := os.Setenv(nameAndValue[0], nameAndValue[1]); err != nil {
+					return errors.New("failed setting environment variable " + nameAndValue[0])
+				}
+			}
+		}
+	}
+	return
 }

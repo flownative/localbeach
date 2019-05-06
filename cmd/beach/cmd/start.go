@@ -18,7 +18,11 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gitlab.com/flownative/localbeach/pkg/exec"
+	"os"
 )
+
+var pull bool
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
@@ -26,20 +30,55 @@ var startCmd = &cobra.Command{
 	Short: "Start the Local Beach instance in the current directory",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		run()
+		run(pull)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().BoolP("pull", "p", true, "Pull Docker images before start")
+	startCmd.Flags().BoolVarP(&pull, "pull", "p", true, "Pull images before start")
 }
 
-func run() {
+func run(pull bool) {
 	projectRootPath, err := detectProjectRootPathFromWorkingDir()
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 	log.Debugf("Detected project root path at %s", projectRootPath)
+
+	if err := loadLocalBeachEnvironment(projectRootPath); err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if pull {
+		commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "pull"}
+		_, err := exec.RunCommand("docker-compose", commandArgs)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+	} else {
+		log.Info("Skipping image pull")
+	}
+
+	commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
+	err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	beachProjectName := os.Getenv("BEACH_PROJECT_NAME")
+	commandArgs = []string{"exec", "local_beach_database" ,"/bin/bash" ,"-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + beachProjectName + "`' | mysql -u root --password=password"}
+	_, err = exec.RunCommand("docker", commandArgs)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	log.Info("You are all set")
+	log.Info("When files have been synced, you can access this instance at http://" + beachProjectName + ".localbeach.net")
+	return
 }
