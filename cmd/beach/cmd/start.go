@@ -29,9 +29,8 @@ var startCmd = &cobra.Command{
 	Use:   "start",
 	Short: "Start the Local Beach instance in the current directory",
 	Long:  "",
-	Run: func(cmd *cobra.Command, args []string) {
-		run(pull)
-	},
+	Args: cobra.ExactArgs(0),
+	Run: handleStartRun,
 }
 
 func init() {
@@ -39,7 +38,7 @@ func init() {
 	startCmd.Flags().BoolVarP(&pull, "pull", "p", true, "Pull images before start")
 }
 
-func run(pull bool) {
+func handleStartRun(cmd *cobra.Command, args []string) {
 	projectRootPath, err := detectProjectRootPathFromWorkingDir()
 	if err != nil {
 		log.Fatal(err)
