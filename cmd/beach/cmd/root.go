@@ -28,16 +28,7 @@ var rootCmd = &cobra.Command{
 	Use:   "beach",
 	Short: "Beach and Local Beach support for the command line",
 	Long: `
-888                             888      
-888                             888      
-888                             888      
-88888b.  .d88b.  8888b.  .d8888b88888b.  
-888 "88bd8P  Y8b    "88bd88P"   888 "88b 
-888  88888888888.d888888888     888  888 
-888 d88PY8b.    888  888Y88b.   888  888 
-88888P"  "Y8888 "Y888888 "Y8888P888  888
-
-Beach is the tool for managing projects in Beach and Local Beach.`,
+beach is the tool for managing projects in Beach and Local Beach. 🏖`,
 }
 
 func Execute() {

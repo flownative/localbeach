@@ -21,12 +21,10 @@ import (
 	"gitlab.com/flownative/localbeach/pkg/exec"
 )
 
-var follow bool
-
-// logsCmd represents the logs command
-var logsCmd = &cobra.Command{
-	Use:   "logs",
-	Short: "Fetch the logs of the Local Beach instance container",
+// statusCmd represents the status command
+var statusCmd = &cobra.Command{
+	Use:   "status",
+	Short: "Display the status of the Local Beach instance containers",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
 		projectRootPath, err := detectProjectRootPathFromWorkingDir()
@@ -40,10 +38,7 @@ var logsCmd = &cobra.Command{
 			return
 		}
 
-		commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "logs"}
-		if follow {
-			commandArgs = append(commandArgs, "-f")
-		}
+		commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "ps"}
 		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 		if err != nil {
 			log.Fatal(err)
@@ -54,6 +49,5 @@ var logsCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(logsCmd)
-	logsCmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow log output")
+	rootCmd.AddCommand(statusCmd)
 }
