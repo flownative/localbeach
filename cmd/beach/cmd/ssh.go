@@ -18,8 +18,8 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gitlab.com/flownative/localbeach/pkg/beachsandbox"
 	"gitlab.com/flownative/localbeach/pkg/exec"
-	"os"
 )
 
 // sshCmd represents the ssh command
@@ -36,14 +36,8 @@ func init() {
 }
 
 func handleSshRun(cmd *cobra.Command, args []string) {
-	projectRootPath, err := detectProjectRootPathFromWorkingDir()
+	sandbox, err := beachsandbox.GetActiveSandbox()
 	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	log.Debugf("Detected project root path at %s", projectRootPath)
-
-	if err := loadLocalBeachEnvironment(projectRootPath); err != nil {
 		log.Fatal(err)
 		return
 	}
@@ -54,7 +48,5 @@ func handleSshRun(cmd *cobra.Command, args []string) {
 		log.Fatal(err)
 		return
 	}
-
-	log.Infof("ssh -t -p %s beach@localbeach.net", os.Getenv("BEACH_SSH_PORT"))
 	return
 }

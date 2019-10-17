@@ -22,13 +22,11 @@ import (
 	"os"
 )
 
-var cfgFile string
-
 var rootCmd = &cobra.Command{
 	Use:   "beach",
 	Short: "Beach and Local Beach support for the command line",
 	Long: `
-beach is the tool for managing projects in Beach and Local Beach. 🏖`,
+beach is the tool for managing projects in Beach and Local Beach.`,
 }
 
 func Execute() {

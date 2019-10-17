@@ -18,6 +18,7 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gitlab.com/flownative/localbeach/pkg/beachsandbox"
 	"gitlab.com/flownative/localbeach/pkg/exec"
 )
 
@@ -29,13 +30,8 @@ var logsCmd = &cobra.Command{
 	Short: "Fetch the logs of the Local Beach instance container",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		projectRootPath, err := detectProjectRootPathFromWorkingDir()
+		_, err := beachsandbox.GetActiveSandbox()
 		if err != nil {
-			log.Fatal(err)
-			return
-		}
-
-		if err := loadLocalBeachEnvironment(projectRootPath); err != nil {
 			log.Fatal(err)
 			return
 		}

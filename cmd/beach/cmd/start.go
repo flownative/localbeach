@@ -18,8 +18,8 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"gitlab.com/flownative/localbeach/pkg/beachsandbox"
 	"gitlab.com/flownative/localbeach/pkg/exec"
-	"os"
 )
 
 var pull bool
@@ -39,16 +39,10 @@ func init() {
 }
 
 func handleStartRun(cmd *cobra.Command, args []string) {
-	projectRootPath, err := detectProjectRootPathFromWorkingDir()
 	commandArgs := []string{""}
 
+	sandbox, err := beachsandbox.GetActiveSandbox()
 	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	log.Debugf("Detected project root path at %s", projectRootPath)
-
-	if err := loadLocalBeachEnvironment(projectRootPath); err != nil {
 		log.Fatal(err)
 		return
 	}
@@ -71,8 +65,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	beachProjectName := os.Getenv("BEACH_PROJECT_NAME")
-	commandArgs = []string{"exec", "local_beach_database" ,"/bin/bash" ,"-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + beachProjectName + "`' | mysql -u root --password=password"}
+	commandArgs = []string{"exec", "local_beach_database" ,"/bin/bash" ,"-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
 	_, err = exec.RunCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(err)
@@ -80,6 +73,6 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("You are all set")
-	log.Info("When files have been synced, you can access this instance at http://" + beachProjectName + ".localbeach.net")
+	log.Info("When files have been synced, you can access this instance at http://" + sandbox.ProjectName + ".localbeach.net")
 	return
 }
