@@ -16,10 +16,10 @@
 package cmd
 
 import (
+	"github.com/flownative/localbeach/pkg/beachsandbox"
+	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gitlab.com/flownative/localbeach/pkg/beachsandbox"
-	"gitlab.com/flownative/localbeach/pkg/exec"
 )
 
 var follow bool

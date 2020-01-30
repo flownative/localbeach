@@ -18,8 +18,8 @@ package cmd
 import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gitlab.com/flownative/localbeach/pkg/beachsandbox"
-	"gitlab.com/flownative/localbeach/pkg/exec"
+	"github.com/flownative/localbeach/pkg/beachsandbox"
+	"github.com/flownative/localbeach/pkg/exec"
 )
 
 // statusCmd represents the status command

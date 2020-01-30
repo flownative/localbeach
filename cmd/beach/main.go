@@ -17,7 +17,7 @@
 package main
 
 import (
-	"gitlab.com/flownative/localbeach/cmd/beach/cmd"
+	"github.com/flownative/localbeach/cmd/beach/cmd"
 )
 
 func main() {
