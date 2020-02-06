@@ -31,7 +31,7 @@ jobs:
         go build -v -o beach .
 
     - name: Archive build result
-        uses: actions/upload-artifact@v1
-        with:
-          name: beach-binary
-          path: beach
+      uses: actions/upload-artifact@v1
+      with:
+        name: beach-binary
+        path: beach
