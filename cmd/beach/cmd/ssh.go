@@ -42,7 +42,7 @@ func handleSshRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php", "bash" ,"-c", "su beach"}
+	commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php", "bash"}
 	err = exec.RunInteractiveCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(err)
