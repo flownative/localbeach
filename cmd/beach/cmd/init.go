@@ -60,7 +60,7 @@ func handleInitRun(cmd *cobra.Command, args []string) {
 
 	log.Info("Project name set as " + projectName)
 
-	copyFileFromAssets("project/docker-compose.yml", ".localbeach.docker-compose.yaml")
+	copyFileFromAssets("project/.localbeach.docker-compose.yaml", ".localbeach.docker-compose.yaml")
 	log.Info("Created '.localbeach.docker-compose.yaml'.")
 
 	copyFileFromAssets("project/Settings.yaml", "Configuration/Development/Beach/Settings.yaml")
@@ -68,6 +68,7 @@ func handleInitRun(cmd *cobra.Command, args []string) {
 
 	environmentContent := readFileFromAssets("project/.localbeach.dist.env")
 	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_PROJECT_NAME}", projectName)
+	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_PROJECT_NAME_LOWERCASE}", strings.ToLower(projectName))
 
 	destination, err := os.Create(".localbeach.dist.env")
 	if err != nil {
