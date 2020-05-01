@@ -1,4 +1,4 @@
-// Copyright © 2019 Robert Lemke / Flownative GmbH
+// Copyright © 2019 - 2020 Robert Lemke / Flownative GmbH
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,6 +30,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of Beach",
 	Long:  `If version numbers are important to you, this command will be your favorite: it displays a version!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Beach CLI %s - © 2019 Robert Lemke / Flownative GmbH 🏖\n", version.Version)
+		fmt.Printf("Beach CLI %s - © 2019 - 2020 Robert Lemke / Flownative GmbH 🏖\n", version.Version)
 	},
 }
