@@ -16,10 +16,10 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 var pull bool
@@ -48,6 +48,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	}
 
 	if pull {
+		log.Debug("Pulling images ...")
 		commandArgs = []string{"-f", ".localbeach.docker-compose.yaml", "pull"}
 		_, err := exec.RunCommand("docker-compose", commandArgs)
 		if err != nil {

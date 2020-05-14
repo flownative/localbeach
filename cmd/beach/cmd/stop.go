@@ -16,32 +16,49 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
+
+var removeContainers bool
 
 // stopCmd represents the stop command
 var stopCmd = &cobra.Command{
 	Use:   "stop",
 	Short: "Stop the Local Beach instance in the current directory",
 	Long:  "",
-	Run: func(cmd *cobra.Command, args []string) {
-		_, err := beachsandbox.GetActiveSandbox()
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
+	Args:  cobra.ExactArgs(0),
+	Run:   handleStopRun,
+}
 
-		commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "stop"}
-		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
+func init() {
+	rootCmd.AddCommand(stopCmd)
+	stopCmd.Flags().BoolVarP(&removeContainers, "remove-containers", "r", false, "Remove containers after they stopped")
+}
+
+func handleStopRun(cmd *cobra.Command, args []string) {
+	_, err := beachsandbox.GetActiveSandbox()
+	if err != nil {
+		log.Fatal(err)
 		return
-	},
+	}
+
+	commandArgs := []string{"-f", ".localbeach.docker-compose.yaml"}
+
+	if removeContainers {
+		commandArgs = append(commandArgs, "down")
+	} else {
+		commandArgs = append(commandArgs, "stop")
+	}
+
+	err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	return
 }
 
 func init() {
