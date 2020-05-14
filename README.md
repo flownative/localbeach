@@ -7,11 +7,11 @@ Local Beach
 Build
 -----
 
-To build the binary, run:
+To build the binary, run `make`. It does this:
  
 ```bash
-    go generate
-    go install
-    go build
+    go generate -v
+    go install -v
+    go build -v -o beach
 ``` 
  
