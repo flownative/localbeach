@@ -42,13 +42,13 @@ jobs:
       - name: Archive build result
         uses: actions/upload-artifact@v2
         with:
-          name: beach (MacOS)
+          name: beach-osx-${{ github.ref }}
           path: beach_darwin_amd64.zip
 
       - name: Archive build result
         uses: actions/upload-artifact@v2
         with:
-          name: beach (Linux)
+          name: beach-linux-${{ github.ref }}
           path: beach_linux_amd64.zip
 
       - name: Create Release
@@ -71,8 +71,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: beach_linux_am64.zip
-          asset_name: beach (Linux)
+          asset_path: beach_linux_amd64.zip
+          asset_name: beach-linux-${{ github.ref }}
           asset_content_type: application/zip
 
       - name: Upload Release Asset
@@ -82,6 +82,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: beach_darwin_am64.zip
-          asset_name: beach (MacOS)
+          asset_path: beach_darwin_amd64.zip
+          asset_name: beach-osx-${{ github.ref }}
           asset_content_type: application/zip
