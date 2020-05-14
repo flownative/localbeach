@@ -52,10 +52,10 @@ Docker containers (--containers).`,
 		} else {
 			commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
 			if follow {
-				commandArgs = append(commandArgs, "-f")
+				commandArgs = append(commandArgs, "bash", "-c", "tail -f /application/Data/Logs/*.log")
+			} else {
+				commandArgs = append(commandArgs, "bash", "-c", "tail /application/Data/Logs/*.log")
 			}
-
-			commandArgs = append(commandArgs, "bash", "-c", "tail -f /application/Data/Logs/*.log")
 
 			err = exec.RunInteractiveCommand("docker", commandArgs)
 			if err != nil {
