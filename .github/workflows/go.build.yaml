@@ -36,7 +36,7 @@ jobs:
             output="beach_${os}_${arch}"
             echo "--> Building project for: $target"
             GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -v -o $output .
-          fi
+          done
 
       - name: Archive build result
         uses: actions/upload-artifact@v2
