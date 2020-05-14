@@ -42,13 +42,13 @@ jobs:
       - name: Archive build result
         uses: actions/upload-artifact@v2
         with:
-          name: beach-osx-${{ github.ref }}
+          name: beach-osx
           path: beach_darwin_amd64.zip
 
       - name: Archive build result
         uses: actions/upload-artifact@v2
         with:
-          name: beach-linux-${{ github.ref }}
+          name: beach-linux
           path: beach_linux_amd64.zip
 
       - name: Create Release
