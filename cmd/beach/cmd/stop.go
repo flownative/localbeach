@@ -35,7 +35,7 @@ var stopCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(stopCmd)
-	stopCmd.Flags().BoolVarP(&removeContainers, "remove-containers", "r", false, "Remove containers after they stopped")
+	stopCmd.Flags().BoolVarP(&removeContainers, "remove", "r", false, "Remove containers after they stopped")
 }
 
 func handleStopRun(cmd *cobra.Command, args []string) {
@@ -48,7 +48,7 @@ func handleStopRun(cmd *cobra.Command, args []string) {
 	commandArgs := []string{"-f", ".localbeach.docker-compose.yaml"}
 
 	if removeContainers {
-		commandArgs = append(commandArgs, "down")
+		commandArgs = append(commandArgs, "down", "--remove-orphans")
 	} else {
 		commandArgs = append(commandArgs, "stop")
 	}
