@@ -28,7 +28,7 @@ jobs:
 
       - name: Build
         run: |
-          targets=${@-"darwin/amd64 linux/amd64 linux/386"}
+          targets=${@-"darwin/amd64 linux/amd64"}
 
           for target in $targets; do
             os="$(echo $target | cut -d '/' -f1)"
@@ -42,29 +42,46 @@ jobs:
       - name: Archive build result
         uses: actions/upload-artifact@v2
         with:
-          name: beach-binaries
-          path: beach_*.zip
+          name: beach (MacOS)
+          path: beach_darwin_amd64.zip
 
-#      - name: Create Release
-#        id: create_release
-#        uses: actions/create-release@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          tag_name: ${{ github.ref }}
-#          release_name: Release ${{ github.ref }}
-#
-#          # FIXME:
-#          draft: false
-#          prerelease: false
-#
-#      - name: Upload Release Asset
-#        id: upload-release-asset
-#        uses: actions/upload-release-asset@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        with:
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: beach_*
-#          asset_name: beach
-#          asset_content_type: application/octet-stream
+      - name: Archive build result
+        uses: actions/upload-artifact@v2
+        with:
+          name: beach (Linux)
+          path: beach_linux_amd64.zip
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+
+          # FIXME:
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset-macos
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: beach_linux_am64.zip
+          asset_name: beach (Linux)
+          asset_content_type: application/zip
+
+      - name: Upload Release Asset
+        id: upload-release-asset-linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: beach_darwin_am64.zip
+          asset_name: beach (MacOS)
+          asset_content_type: application/zip
