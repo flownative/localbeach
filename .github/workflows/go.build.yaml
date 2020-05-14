@@ -33,10 +33,9 @@ jobs:
           for target in $targets; do
             os="$(echo $target | cut -d '/' -f1)"
             arch="$(echo $target | cut -d '/' -f2)"
-            output="beach_${os}_${arch}"
-            echo "--> Building project for: $target"
+            echo "--> Building project for: ${os}/${arch}"
             GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -o beach .
-            zip beach_$os_$arch.zip beach
+            zip "beach_${os}_${arch}.zip beach
             ls -la
           done
 
