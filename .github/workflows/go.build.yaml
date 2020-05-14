@@ -35,35 +35,37 @@ jobs:
             arch="$(echo $target | cut -d '/' -f2)"
             output="beach_${os}_${arch}"
             echo "--> Building project for: $target"
-            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -v -o $output .
+            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -o beach .
+            zip beach_$os_$arch.zip beach
+            ls -la
           done
 
       - name: Archive build result
         uses: actions/upload-artifact@v2
         with:
           name: beach-binaries
-          path: beach_*
+          path: beach_*.zip
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-
-          # FIXME:
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: beach_*
-          asset_name: beach
-          asset_content_type: application/octet-stream
+#      - name: Create Release
+#        id: create_release
+#        uses: actions/create-release@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ github.ref }}
+#          release_name: Release ${{ github.ref }}
+#
+#          # FIXME:
+#          draft: false
+#          prerelease: false
+#
+#      - name: Upload Release Asset
+#        id: upload-release-asset
+#        uses: actions/upload-release-asset@v1
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: beach_*
+#          asset_name: beach
+#          asset_content_type: application/octet-stream
