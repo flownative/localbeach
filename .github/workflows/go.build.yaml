@@ -28,13 +28,21 @@ jobs:
 
       - name: Build
         run: |
-          go build -v -o beach .
+          targets=${@-"darwin/amd64 linux/amd64 linux/386"}
+
+          for target in $targets; do
+            os="$(echo $target | cut -d '/' -f1)"
+            arch="$(echo $target | cut -d '/' -f2)"
+            output="beach_${os}_${arch}"
+            echo "--> Building project for: $target"
+            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -v -o $output .
+          fi
 
       - name: Archive build result
         uses: actions/upload-artifact@v2
         with:
-          name: beach-binary
-          path: beach
+          name: beach-binaries
+          path: beach_*
 
       - name: Create Release
         id: create_release
@@ -56,6 +64,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: beach
+          asset_path: beach_*
           asset_name: beach
           asset_content_type: application/octet-stream

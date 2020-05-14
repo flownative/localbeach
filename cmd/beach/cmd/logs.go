@@ -23,28 +23,47 @@ import (
 )
 
 var follow bool
+var containers bool
 
 // logsCmd represents the logs command
 var logsCmd = &cobra.Command{
 	Use:   "logs",
-	Short: "Fetch the logs of the Local Beach instance container",
-	Long:  "",
+	Short: "Display logs of the Local Beach instance container",
+	Long: `This command allows you to either display the content of log files 
+found in Data/Logs/* (default) or show the console output of the
+Docker containers (--containers).`,
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := beachsandbox.GetActiveSandbox()
+		sandbox, err := beachsandbox.GetActiveSandbox()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "logs"}
-		if follow {
-			commandArgs = append(commandArgs, "-f")
+		if containers {
+			commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "logs"}
+			if follow {
+				commandArgs = append(commandArgs, "-f")
+			}
+			err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
+		} else {
+			commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
+			if follow {
+				commandArgs = append(commandArgs, "-f")
+			}
+
+			commandArgs = append(commandArgs, "bash", "-c", "tail -f /application/Data/Logs/*.log")
+
+			err = exec.RunInteractiveCommand("docker", commandArgs)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
 		}
-		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
+
 		return
 	},
 }
@@ -52,4 +71,5 @@ var logsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(logsCmd)
 	logsCmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow log output")
+	logsCmd.Flags().BoolVarP(&containers, "containers", "c", false, "Show log of container console output")
 }
