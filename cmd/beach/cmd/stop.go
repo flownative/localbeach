@@ -39,13 +39,13 @@ func init() {
 }
 
 func handleStopRun(cmd *cobra.Command, args []string) {
-	_, err := beachsandbox.GetActiveSandbox()
+	sandbox, err := beachsandbox.GetActiveSandbox()
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	commandArgs := []string{"-f", ".localbeach.docker-compose.yaml"}
+	commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml"}
 
 	if removeContainers {
 		commandArgs = append(commandArgs, "down", "--remove-orphans")

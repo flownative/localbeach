@@ -2,8 +2,6 @@ package beachsandbox
 
 import (
 	"os"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type BeachSandbox struct {
@@ -24,8 +22,6 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 	}
 
 	sandbox.ProjectName = os.Getenv("BEACH_PROJECT_NAME")
-
-	log.Debugf("Detected project root path at %s", sandbox.ProjectRootPath)
 
 	return nil
 }

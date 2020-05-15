@@ -28,13 +28,13 @@ var statusCmd = &cobra.Command{
 	Short: "Display the status of the Local Beach instance containers",
 	Long:  "",
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := beachsandbox.GetActiveSandbox()
+		sandbox, err := beachsandbox.GetActiveSandbox()
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
 
-		commandArgs := []string{"-f", ".localbeach.docker-compose.yaml", "ps"}
+		commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "ps"}
 		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 		if err != nil {
 			log.Fatal(err)
