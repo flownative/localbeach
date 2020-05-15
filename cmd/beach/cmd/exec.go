@@ -16,10 +16,12 @@
 package cmd
 
 import (
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
+	"fmt"
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"strings"
 )
 
 // execCmd represents the exec command
@@ -27,7 +29,7 @@ var execCmd = &cobra.Command{
 	Use:   "exec",
 	Short: "Execute a command in or enter a Local Beach container",
 	Long:  "",
-	Args: cobra.ExactArgs(0),
+	DisableFlagParsing: true,
 	Run: handleExecRun,
 }
 
@@ -42,7 +44,13 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php", "bash"}
+	commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
+	if len(args) > 0 {
+		commandArgs = append(commandArgs, "bash", "-c", strings.Trim(fmt.Sprint(args), "[]"))
+	} else {
+		commandArgs = append(commandArgs, "bash")
+	}
+
 	err = exec.RunInteractiveCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(err)
