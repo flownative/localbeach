@@ -61,7 +61,3 @@ func handleStopRun(cmd *cobra.Command, args []string) {
 
 	return
 }
-
-func init() {
-	rootCmd.AddCommand(stopCmd)
-}
