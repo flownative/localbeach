@@ -23,6 +23,11 @@ services:
       - local_beach
     volumes:
       - {{databaseFolder}}:/var/lib/mysql
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=password --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 10
     environment:
       - MYSQL_ROOT_PASSWORD=password
     ports:
