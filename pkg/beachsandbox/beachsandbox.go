@@ -10,14 +10,9 @@ type BeachSandbox struct {
 }
 
 func (sandbox *BeachSandbox) Init(rootPath string) error {
-	projectRootPath, err := detectProjectRootPathFromWorkingDir()
-	sandbox.ProjectRootPath = projectRootPath
+	sandbox.ProjectRootPath = rootPath
 
-	if err != nil {
-		return err
-	}
-
-	if err = loadLocalBeachEnvironment(projectRootPath); err != nil {
+	if err := loadLocalBeachEnvironment(rootPath); err != nil {
 		return err
 	}
 
@@ -28,8 +23,23 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 
 // GetActiveSandbox returns the sandbox based on the current working dir
 func GetActiveSandbox() (*BeachSandbox, error) {
+	rootPath, err := detectProjectRootPathFromWorkingDir()
+	if err != nil {
+		return nil, err
+	}
+
 	sandbox := &BeachSandbox{}
-	if err := sandbox.Init(""); err != nil {
+	if err := sandbox.Init(rootPath); err != nil {
+		return sandbox, err
+	}
+
+	return sandbox, nil
+}
+
+// GetSandbox returns the sandbox based on the given dir
+func GetSandbox(rootPath string) (*BeachSandbox, error) {
+	sandbox := &BeachSandbox{}
+	if err := sandbox.Init(rootPath); err != nil {
 		return sandbox, err
 	}
 
