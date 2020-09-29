@@ -134,7 +134,7 @@ jobs:
       - name: Commit update
         uses: EndBug/add-and-commit@v5
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_TOKEN }}
         with:
           add: Formula/localbeach.rb
           branch: master
