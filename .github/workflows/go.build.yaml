@@ -134,6 +134,8 @@ jobs:
       - name: Commit update
         run: |
           cd homebrew
+          git config --global user.email "ops@flownative.com"
+          git config --global user.name "Flownative Bot"
           git add Formula/localbeach.rb
           git commit -m 'localbeach: update to ${{ github.ref }}'
           git push
