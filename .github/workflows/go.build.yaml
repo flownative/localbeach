@@ -134,6 +134,7 @@ jobs:
       - name: Commit update
         run: |
           cd homebrew
+          git config --local --unset-all "http.https://github.com/.extraheader"
           git config --global user.email "ops@flownative.com"
           git config --global user.name "Flownative Bot"
           git add Formula/localbeach.rb
