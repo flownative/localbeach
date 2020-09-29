@@ -18,12 +18,13 @@ package cmd
 
 import (
 	"errors"
+	"strings"
+	"time"
+
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
-	"time"
 )
 
 var pull bool

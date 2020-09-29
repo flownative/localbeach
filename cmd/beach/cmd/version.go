@@ -17,8 +17,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"github.com/flownative/localbeach/pkg/version"
+	"github.com/spf13/cobra"
 )
 
 func init() {

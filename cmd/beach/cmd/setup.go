@@ -52,11 +52,11 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	err := os.MkdirAll(databaseFolder, os.ModePerm);
+	err := os.MkdirAll(databaseFolder, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}
-	err = os.MkdirAll(dockerFolder, os.ModePerm);
+	err = os.MkdirAll(dockerFolder, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}

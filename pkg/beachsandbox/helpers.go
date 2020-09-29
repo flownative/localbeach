@@ -42,9 +42,9 @@ func loadLocalBeachEnvironment(projectRootPath string) (err error) {
 	for _, envFilename := range envFilenames {
 		envPathAndFilename = projectRootPath + "/" + envFilename
 
-		if _, err := os.Stat(envPathAndFilename ); err == nil {
+		if _, err := os.Stat(envPathAndFilename); err == nil {
 
-			source, err := ioutil.ReadFile(envPathAndFilename )
+			source, err := ioutil.ReadFile(envPathAndFilename)
 			if err != nil {
 				return errors.New("failed loading environment file " + envPathAndFilename + ": " + err.Error())
 			}

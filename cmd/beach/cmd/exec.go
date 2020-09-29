@@ -26,11 +26,11 @@ import (
 
 // execCmd represents the exec command
 var execCmd = &cobra.Command{
-	Use:   "exec",
-	Short: "Execute a command in or enter a Local Beach container",
-	Long:  "",
+	Use:                "exec",
+	Short:              "Execute a command in or enter a Local Beach container",
+	Long:               "",
 	DisableFlagParsing: true,
-	Run: handleExecRun,
+	Run:                handleExecRun,
 }
 
 func init() {

@@ -17,12 +17,13 @@ package cmd
 
 import (
 	"errors"
+	"path/filepath"
+	"strings"
+
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"path/filepath"
-	"strings"
 )
 
 // downCmd represents the down command
@@ -78,9 +79,9 @@ func findInstancRoots() ([]string, error) {
 		return nil, errors.New(output)
 	}
 	for _, line := range strings.Split(output, "\n") {
-		containerId := strings.TrimSpace(line)
-		if len(containerId) > 0 {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerId})
+		containerID := strings.TrimSpace(line)
+		if len(containerID) > 0 {
+			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
 			if err != nil {
 				return nil, errors.New(output)
 			}

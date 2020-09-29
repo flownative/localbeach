@@ -17,18 +17,19 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 var rootCmd = &cobra.Command{
 	Use:   "beach",
 	Short: "Beach and Local Beach support for the command line",
-	Long: `
-beach is the tool for managing projects in Beach and Local Beach.`,
+	Long:  `beach is the tool for managing projects in Beach and Local Beach.`,
 }
 
+// Execute runs this tool
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -39,9 +40,8 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	log.SetFormatter(&log.TextFormatter{
-		DisableTimestamp: true,
+		DisableTimestamp:       true,
 		DisableLevelTruncation: true,
-
 	})
 	log.SetLevel(log.DebugLevel)
 }
