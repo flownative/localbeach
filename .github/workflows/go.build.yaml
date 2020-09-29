@@ -98,6 +98,9 @@ jobs:
     needs: build
     steps:
 
+      - name: Check out Go code
+        uses: actions/checkout@v2
+
       - name: Check out Homebrew code
         uses: actions/checkout@v2
         with:
