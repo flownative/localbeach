@@ -108,10 +108,7 @@ jobs:
           path: homebrew
 
       - name: Copy file
-        uses: canastro/copy-action@0.0.2
-        with:
-          source: .github/workflows/localbeach.rb.tpl
-          target: homebrew/Formula/localbeach.rb
+        run: cp .github/workflows/localbeach.rb.tpl homebrew/Formula/localbeach.rb
 
       - name: Replace version number
         uses: shitiomatic/str-replace@master
@@ -137,7 +134,8 @@ jobs:
       - name: Commit update
         uses: EndBug/add-and-commit@v5
         with:
-          add: 'homebrew'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          add: Formula/localbeach.rb
           branch: master
           cwd: './homebrew'
           message: 'localbeach: update to ${{ github.ref }}'
