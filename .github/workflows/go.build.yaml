@@ -85,3 +85,63 @@ jobs:
           asset_path: beach_darwin_amd64.zip
           asset_name: beach_darwin_amd64.zip
           asset_content_type: application/zip
+
+      - name: Calculate checksums
+        id: calculate-checksums
+        run: |
+          echo "::set-output name=darwin_sha256sum::$(sha256sum beach_darwin_amd64.zip)"
+          echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip)"
+
+  homebrew:
+    name: Homebrew release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+
+      - name: Check out Homebrew code
+        uses: actions/checkout@v2
+        with:
+          repository: flownative/homebrew-flownative
+          path: homebrew
+
+      - name: Copy file
+        uses: canastro/copy-action@0.0.2
+        with:
+          source: .github/workflows/localbeach.rb.tpl
+          target: homebrew/Formula/localbeach.rb
+
+      - name: Replace version number
+        uses: shitiomatic/str-replace@master
+        with:
+          find: "{{version}}"
+          replace: ${{ github.ref }}
+          include: homebrew/Formula/localbeach.rb
+
+      - name: Replace SHA256 sum (darwin)
+        uses: shitiomatic/str-replace@master
+        with:
+          find: "{{{darwin_sha256sum}}"
+          replace: ${{needs.build.outputs.darwin_sha256sum}}
+          include: homebrew/Formula/localbeach.rb
+
+      - name: Replace SHA256 sum (linux)
+        uses: shitiomatic/str-replace@master
+        with:
+          find: "{{linux_sha256sum}}"
+          replace: ${{needs.build.outputs.linux_sha256sum}}
+          include: homebrew/Formula/localbeach.rb
+
+      - name: Commit update
+        uses: EndBug/add-and-commit@v5
+        with:
+          add: 'homebrew'
+          branch: master
+          cwd: './homebrew'
+          message: 'localbeach: update to ${{ github.ref }}'
+
+      - name: Push to git
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          repository: flownative/homebrew-flownative
+          directory: homebrew
