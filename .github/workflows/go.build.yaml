@@ -39,13 +39,13 @@ jobs:
             ls -la
           done
 
-      - name: Archive build result
+      - name: Archive build result (darwin)
         uses: actions/upload-artifact@v2
         with:
           name: beach-osx
           path: beach_darwin_amd64.zip
 
-      - name: Archive build result
+      - name: Archive build result (linux)
         uses: actions/upload-artifact@v2
         with:
           name: beach-linux
@@ -64,7 +64,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset
+      - name: Upload Release Asset (darwin)
         id: upload-release-asset-macos
         uses: actions/upload-release-asset@v1
         env:
@@ -75,7 +75,7 @@ jobs:
           asset_name: beach_linux_amd64.zip
           asset_content_type: application/zip
 
-      - name: Upload Release Asset
+      - name: Upload Release Asset (linux)
         id: upload-release-asset-linux
         uses: actions/upload-release-asset@v1
         env:
@@ -107,7 +107,7 @@ jobs:
           repository: flownative/homebrew-flownative
           path: homebrew
 
-      - name: Copy file
+      - name: Copy formula template
         run: cp .github/workflows/localbeach.rb.tpl homebrew/Formula/localbeach.rb
 
       - name: Replace version number
