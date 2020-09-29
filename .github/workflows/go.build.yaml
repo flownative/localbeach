@@ -87,11 +87,11 @@ jobs:
           asset_content_type: application/zip
 
       - name: Calculate checksum (darwin)
-        id: calculate-checksums
+        id: calculate-checksums-darwin
         run: echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip)"
 
       - name: Calculate checksum (linux)
-        id: calculate-checksums
+        id: calculate-checksums-linux
         run: echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip)"
 
   homebrew:
