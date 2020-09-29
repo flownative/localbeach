@@ -132,11 +132,8 @@ jobs:
           include: homebrew/Formula/localbeach.rb
 
       - name: Commit update
-        uses: EndBug/add-and-commit@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_BOT_TOKEN }}
-        with:
-          add: Formula/localbeach.rb
-          branch: master
-          cwd: homebrew
-          message: 'localbeach: update to ${{ github.ref }}'
+        run: |
+          cd homebrew
+          git add Formula/localbeach.rb
+          git commit -m 'localbeach: update to ${{ github.ref }}'
+          git push
