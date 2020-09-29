@@ -61,7 +61,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("Stopping database & nginx...")
-	commandArgs := []string{"-f", "/usr/local/lib/beach-cli/localbeach/docker-compose.yml", "rm", "--force", "--stop", "-v"}
+	commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "rm", "--force", "--stop", "-v"}
 	err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 	if err != nil {
 		log.Fatal(err)

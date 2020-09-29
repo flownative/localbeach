@@ -90,13 +90,13 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 }
 
 func startLocalBeach() error {
-	output, err := exec.RunCommand("docker-compose", []string{"-f", "/usr/local/lib/beach-cli/localbeach/docker-compose.yml", "ps", "-q"})
+	output, err := exec.RunCommand("docker-compose", []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "ps", "-q"})
 	if err != nil {
 		return err
 	}
 	if len(output) == 0 {
 		log.Info("Starting nginx & database ...")
-		commandArgs := []string{"-f", "/usr/local/lib/beach-cli/localbeach/docker-compose.yml", "up", "--remove-orphans", "-d"}
+		commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "up", "--remove-orphans", "-d"}
 		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 		if err != nil {
 			return err
