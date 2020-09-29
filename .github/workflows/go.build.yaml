@@ -75,6 +75,10 @@ jobs:
           asset_name: beach_linux_amd64.zip
           asset_content_type: application/zip
 
+      - name: Calculate checksum (darwin)
+        id: calculate-checksums-darwin
+        run: echo "::set-output name=darwin_sha256sum::$(sha256sum beach_darwin_amd64.zip)"
+
       - name: Upload Release Asset (linux)
         id: upload-release-asset-linux
         uses: actions/upload-release-asset@v1
@@ -85,10 +89,6 @@ jobs:
           asset_path: beach_darwin_amd64.zip
           asset_name: beach_darwin_amd64.zip
           asset_content_type: application/zip
-
-      - name: Calculate checksum (darwin)
-        id: calculate-checksums-darwin
-        run: echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip)"
 
       - name: Calculate checksum (linux)
         id: calculate-checksums-linux
@@ -113,13 +113,13 @@ jobs:
         run: cp .github/workflows/localbeach.rb.tpl homebrew/Formula/localbeach.rb
 
       - name: Set RELEASE_VERSION env
-        run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF#refs/*/}
 
       - name: Replace version number
         uses: shitiomatic/str-replace@master
         with:
           find: "{{version}}"
-          replace: $RELEASE_VERSION
+          replace: ${{ env.RELEASE_VERSION }}
           include: homebrew/Formula/localbeach.rb
 
       - name: Replace SHA256 sum (darwin)
