@@ -86,11 +86,13 @@ jobs:
           asset_name: beach_darwin_amd64.zip
           asset_content_type: application/zip
 
-      - name: Calculate checksums
+      - name: Calculate checksum (darwin)
         id: calculate-checksums
-        run: |
-          echo "::set-output name=darwin_sha256sum::$(sha256sum beach_darwin_amd64.zip)"
-          echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip)"
+        run: echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip)"
+
+      - name: Calculate checksum (linux)
+        id: calculate-checksums
+        run: echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip)"
 
   homebrew:
     name: Homebrew release
@@ -110,11 +112,14 @@ jobs:
       - name: Copy formula template
         run: cp .github/workflows/localbeach.rb.tpl homebrew/Formula/localbeach.rb
 
+      - name: Set RELEASE_VERSION env
+        run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+
       - name: Replace version number
         uses: shitiomatic/str-replace@master
         with:
           find: "{{version}}"
-          replace: ${{ github.ref }}
+          replace: $RELEASE_VERSION
           include: homebrew/Formula/localbeach.rb
 
       - name: Replace SHA256 sum (darwin)
