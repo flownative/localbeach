@@ -138,4 +138,10 @@ jobs:
           git config --global user.name "Flownative Bot"
           git add Formula/localbeach.rb
           git commit -m 'localbeach: update to ${{ github.ref }}'
-          git push https://flownative-bot:${{ secrets.GITHUB_BOT_TOKEN }}@github.com/flownative/homebrew-flownative.git
+
+      - name: Push to git
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_BOT_TOKEN }}
+          repository: flownative/homebrew-flownative
+          directory: homebrew
