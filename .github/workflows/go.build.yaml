@@ -10,6 +10,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      darwin_sha256sum: ${{ steps.calculate-checksums-darwin.outputs.darwin_sha256sum }}
+      linux_sha256sum: ${{ steps.calculate-checksums-linux.outputs.linux_sha256sum }}
     steps:
 
       - name: Set up Go 1.13
@@ -125,7 +128,7 @@ jobs:
       - name: Replace SHA256 sum (darwin)
         uses: shitiomatic/str-replace@master
         with:
-          find: "{{{darwin_sha256sum}}"
+          find: "{{darwin_sha256sum}}"
           replace: ${{needs.build.outputs.darwin_sha256sum}}
           include: homebrew/Formula/localbeach.rb
 
