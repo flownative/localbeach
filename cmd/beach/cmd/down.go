@@ -53,18 +53,18 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 			return
 		}
 		commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "rm", "--force", "--stop", "-v"}
-		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+		output, err := exec.RunCommand("docker-compose", commandArgs)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(output)
 			return
 		}
 	}
 
 	log.Info("Stopping database & nginx...")
 	commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "rm", "--force", "--stop", "-v"}
-	err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+	output, err := exec.RunCommand("docker-compose", commandArgs)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(output)
 		return
 	}
 

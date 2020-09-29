@@ -48,7 +48,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 
 	sandbox, err := beachsandbox.GetActiveSandbox()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Could not activate sandbox")
 		return
 	}
 
@@ -71,16 +71,16 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	}
 
 	commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
-	err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+	output, err := exec.RunCommand("docker-compose", commandArgs)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(output)
 		return
 	}
 
 	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
-	_, err = exec.RunCommand("docker", commandArgs)
+	output, err = exec.RunCommand("docker", commandArgs)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(output)
 		return
 	}
 
@@ -92,14 +92,14 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 func startLocalBeach() error {
 	output, err := exec.RunCommand("docker-compose", []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "ps", "-q"})
 	if err != nil {
-		return err
+		return errors.New("failed to check for running containers")
 	}
 	if len(output) == 0 {
 		log.Info("Starting nginx & database ...")
 		commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "up", "--remove-orphans", "-d"}
 		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 		if err != nil {
-			return err
+			return errors.New("container startup failed")
 		}
 
 		log.Info("Waiting for database ...")
@@ -107,7 +107,7 @@ func startLocalBeach() error {
 		for {
 			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
 			if err != nil {
-				return err
+				return errors.New("failed to check for database container health")
 			}
 			if strings.TrimSpace(output) == "healthy" {
 				break
