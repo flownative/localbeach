@@ -61,9 +61,9 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	if pull {
 		log.Debug("Pulling images ...")
 		commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
-		_, err := exec.RunCommand("docker-compose", commandArgs)
+		output, err := exec.RunCommand("docker-compose", commandArgs)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal(output)
 			return
 		}
 	} else {
