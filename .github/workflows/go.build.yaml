@@ -37,7 +37,7 @@ jobs:
             os="$(echo $target | cut -d '/' -f1)"
             arch="$(echo $target | cut -d '/' -f2)"
             echo "--> Building project for: ${os}/${arch}"
-            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -o beach .
+            GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags "-X github.com/flownative/localbeach/pkg/version.Version=${GITHUB_REF#refs/*/}" -o beach .
             zip "beach_${os}_${arch}.zip" beach
             ls -la
           done
