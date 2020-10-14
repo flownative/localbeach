@@ -20,9 +20,11 @@ import (
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strconv"
 )
 
 var follow bool
+var tail int
 var containers bool
 
 // logsCmd represents the logs command
@@ -40,7 +42,7 @@ Docker containers (--containers).`,
 		}
 
 		if containers {
-			commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "logs"}
+			commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "logs", "--tail=" + strconv.Itoa(tail)}
 			if follow {
 				commandArgs = append(commandArgs, "-f")
 			}
@@ -52,9 +54,9 @@ Docker containers (--containers).`,
 		} else {
 			commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
 			if follow {
-				commandArgs = append(commandArgs, "bash", "-c", "tail -f /application/Data/Logs/*.log")
+				commandArgs = append(commandArgs, "bash", "-c", "tail -n -" + strconv.Itoa(tail) + " -f /application/Data/Logs/*.log")
 			} else {
-				commandArgs = append(commandArgs, "bash", "-c", "tail /application/Data/Logs/*.log")
+				commandArgs = append(commandArgs, "bash", "-c", "tail -n -" + strconv.Itoa(tail) + " /application/Data/Logs/*.log")
 			}
 
 			err = exec.RunInteractiveCommand("docker", commandArgs)
@@ -71,5 +73,6 @@ Docker containers (--containers).`,
 func init() {
 	rootCmd.AddCommand(logsCmd)
 	logsCmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow log output")
+	logsCmd.Flags().IntVarP(&tail, "tail", "t", 10, "Number of lines to show from the end of the logs")
 	logsCmd.Flags().BoolVarP(&containers, "containers", "c", false, "Show log of container console output")
 }
