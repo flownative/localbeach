@@ -95,25 +95,25 @@ func startLocalBeach() error {
 		return errors.New("failed to check for running containers")
 	}
 	if len(output) == 0 {
-		log.Info("Starting nginx & database ...")
+		log.Info("Starting reverse proxy and database server ...")
 		commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "up", "--remove-orphans", "-d"}
 		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")
 		}
 
-		log.Info("Waiting for database ...")
+		log.Info("Waiting for database server ...")
 		tries := 1
 		for {
 			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
 			if err != nil {
-				return errors.New("failed to check for database container health")
+				return errors.New("failed to check for database server container health")
 			}
 			if strings.TrimSpace(output) == "healthy" {
 				break
 			}
 			if tries == 10 {
-				return errors.New("timeout waiting for database to start")
+				return errors.New("timeout waiting for database server to start")
 			}
 			tries++
 			time.Sleep(3 * time.Second)

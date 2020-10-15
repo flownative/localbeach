@@ -5,15 +5,17 @@ networks:
     name: local_beach
 
 services:
-  nginx:
-    image: flownative/localbeach-nginx-proxy:0.1.2-2
+  webserver:
+    image: flownative/localbeach-nginx-proxy:0.2.0
     container_name: local_beach_nginx
     networks:
       - local_beach
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - {{nginxFolder}}/Certificates:/etc/nginx/certs
     environment:
       - DEFAULT_HOST=hello.localbeach.net
   database:

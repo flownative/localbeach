@@ -21,10 +21,21 @@ class Localbeach < Formula
 
   conflicts_with "flownative/flownative/beach-cli", because: "localbeach replaces beach-cli"
 
+  depends_on "docker" => :build
+  depends_on "mkcert" => :run
+  depends_on "nss" => :run
+
   def install
     database_path = RUBY_PLATFORM.downcase.include?("darwin") ? "~/Library/Application Support/Flownative/Local Beach/MariaDB" : "~/.Flownative/Local Beach/MariaDB"
 
     bin.install "beach" => "beach"
     system "#{bin}/beach", "setup", "--docker-folder", "#{lib}/localbeach", "--database-folder", database_path
+  end
+
+  def caveats
+  <<~EOS
+Local Beach is built on top of Docker and Docker Compose. You will need a working setup of both in order to use Local
+Beach.
+  EOS
   end
 end

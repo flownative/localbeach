@@ -29,7 +29,7 @@ import (
 // downCmd represents the down command
 var downCmd = &cobra.Command{
 	Use:   "down",
-	Short: "Stop instances, database and webserver and remove containers",
+	Short: "Stop instances, reverse proxy and database server and remove containers",
 	Long:  "",
 	Args:  cobra.ExactArgs(0),
 	Run:   handleDownRun,
@@ -40,7 +40,7 @@ func init() {
 }
 
 func handleDownRun(cmd *cobra.Command, args []string) {
-	instanceRoots, err := findInstancRoots()
+	instanceRoots, err := findInstanceRoots()
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -60,7 +60,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	log.Info("Stopping database & nginx...")
+	log.Info("Stopping reverse proxy and database server ...")
 	commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "rm", "--force", "--stop", "-v"}
 	output, err := exec.RunCommand("docker-compose", commandArgs)
 	if err != nil {
@@ -71,7 +71,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	return
 }
 
-func findInstancRoots() ([]string, error) {
+func findInstanceRoots() ([]string, error) {
 	var configurationFiles []string
 
 	output, err := exec.RunCommand("docker", []string{"ps", "-q", "--filter", "name=_devkit"})
