@@ -26,10 +26,9 @@ class Localbeach < Formula
 
   def install
     database_path = RUBY_PLATFORM.downcase.include?("darwin") ? "~/Library/Application Support/Flownative/Local Beach/MariaDB" : "~/.Flownative/Local Beach/MariaDB"
-    nginx_path = RUBY_PLATFORM.downcase.include?("darwin") ? "~/Library/Application Support/Flownative/Local Beach/Nginx" : "~/.Flownative/Local Beach/Nginx"
 
     bin.install "beach" => "beach"
-    system "#{bin}/beach", "setup", "--docker-folder", "#{lib}/localbeach", "--database-folder", database_path, "--nginx-folder", nginx_path
+    system "#{bin}/beach", "setup", "--docker-folder", "#{lib}/localbeach", "--database-folder", database_path
   end
 
   def caveats

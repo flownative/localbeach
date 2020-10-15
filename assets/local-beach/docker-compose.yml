@@ -15,7 +15,7 @@ services:
       - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - {{nginxFolder}}/Certificates:/etc/nginx/certs
+      - /usr/local/lib/localbeach/certificates:/etc/nginx/certs
     environment:
       - DEFAULT_HOST=hello.localbeach.net
   database:

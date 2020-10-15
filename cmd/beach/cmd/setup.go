@@ -16,7 +16,6 @@
 package cmd
 
 import (
-	"github.com/flownative/localbeach/pkg/exec"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +26,6 @@ import (
 
 var dockerFolder string
 var databaseFolder string
-var nginxFolder string
 
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
@@ -40,7 +38,6 @@ var setupCmd = &cobra.Command{
 
 func init() {
 	setupCmd.Flags().StringVar(&dockerFolder, "docker-folder", "", "Defines the folder used for docker metadata.")
-	setupCmd.Flags().StringVar(&nginxFolder, "nginx-folder", "", "Defines the folder used for Nginx configuration.")
 	setupCmd.Flags().StringVar(&databaseFolder, "database-folder", "", "Defines the folder used for the database server.")
 	rootCmd.AddCommand(setupCmd)
 }
@@ -54,11 +51,6 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 		log.Fatal("docker-folder must be given.")
 		return
 	}
-	if len(nginxFolder) == 0 {
-		log.Fatal("nginx-folder must be given.")
-		return
-	}
-
 	err := os.MkdirAll(databaseFolder, os.ModePerm)
 	if err != nil {
 		log.Error(err)
@@ -67,44 +59,25 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-	err = os.MkdirAll(nginxFolder, os.ModePerm)
-	if err != nil {
-		log.Error(err)
-	}
-	err = os.MkdirAll(nginxFolder + "/Certificates", os.ModePerm)
+
+	err = os.MkdirAll("/usr/local/lib/localbeach/certificates", os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}
 
 	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
 	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databaseFolder}}", databaseFolder)
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{nginxFolder}}", nginxFolder)
 
 	destination, err := os.Create(filepath.Join(dockerFolder, "docker-compose.yml"))
-	if err != nil {
-		log.Error(err)
-	}
 	defer destination.Close()
-
-	_, err = destination.WriteString(composeFileContent)
 	if err != nil {
-		log.Error(err)
+		log.Error("failed creating docker-compose.yml: ", err)
+	} else {
+		_, err = destination.WriteString(composeFileContent)
+		if err != nil {
+			log.Error(err)
+		}
+
 	}
-
-	commandArgs := []string{"-install"}
-	err = exec.RunInteractiveCommand("mkcert", commandArgs)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-	commandArgs = []string{"-cert-file", nginxFolder + "/Certificates/default.crt", "-key-file", nginxFolder + "/Certificates/default.key", "*.localbeach.net"}
-	err = exec.RunInteractiveCommand("mkcert", commandArgs)
-	if err != nil {
-		log.Error(err)
-		return
-	}
-
-
 	return
 }
