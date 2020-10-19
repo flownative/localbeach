@@ -1,50 +1,45 @@
-// Copyright © 2019 - 2020 Robert Lemke / Flownative GmbH
-// Copyright © 2020 Karsten Dambekalns / Flownative GmbH
+// Copyright 2019-2020 Robert Lemke, Karsten Dambekalns, Christian Müller
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <http://www.gnu.org/licenses/>.
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 package cmd
 
 import (
-	"errors"
-	"strings"
-	"time"
-
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
-var pull bool
+var restartPull bool
+var restartRemove bool
 
-// startCmd represents the start command
-var startCmd = &cobra.Command{
-	Use:   "start",
-	Short: "Start the Local Beach instance in the current directory",
+// restartCmd represents the restart command
+var restartCmd = &cobra.Command{
+	Use:   "restart",
+	Short: "restart the Local Beach instance in the current directory",
 	Long:  "",
 	Args:  cobra.ExactArgs(0),
-	Run:   handleStartRun,
+	Run:   handleRestartRun,
 }
 
 func init() {
-	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().BoolVarP(&pull, "pull", "p", true, "Pull images before start")
+	rootCmd.AddCommand(restartCmd)
+	restartCmd.Flags().BoolVarP(&restartRemove, "remove", "r", true, "Remove containers before restart")
+	restartCmd.Flags().BoolVarP(&restartPull, "pull", "p", false, "Pull images before restart")
 }
 
-func handleStartRun(cmd *cobra.Command, args []string) {
-	commandArgs := []string{""}
+func handleRestartRun(cmd *cobra.Command, args []string) {
 
 	sandbox, err := beachsandbox.GetActiveSandbox()
 	if err != nil {
@@ -52,13 +47,22 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	err = startLocalBeach()
+	commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml"}
+	if restartRemove {
+		log.Debug("Stopping and removing containers ...")
+		commandArgs = append(commandArgs, "down", "--remove-orphans", "--volumes")
+	} else {
+		log.Debug("Stopping containers ...")
+		commandArgs = append(commandArgs, "stop")
+	}
+
+	err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	if pull {
+	if restartPull{
 		log.Debug("Pulling images ...")
 		commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
 		output, err := exec.RunCommand("docker-compose", commandArgs)
@@ -66,9 +70,9 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 			log.Fatal(output)
 			return
 		}
-	} else {
-		log.Info("Skipping image pull")
 	}
+
+	log.Debug("Starting containers ...")
 
 	commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
 	output, err := exec.RunCommand("docker-compose", commandArgs)
@@ -77,47 +81,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
-	output, err = exec.RunCommand("docker", commandArgs)
-	if err != nil {
-		log.Fatal(output)
-		return
-	}
-
-	log.Info("You are all set")
+	log.Info("Local Beach instance was restarted.")
 	log.Info("When files have been synced, you can access this instance at http://" + sandbox.ProjectName + ".localbeach.net")
 	return
-}
-
-func startLocalBeach() error {
-	output, err := exec.RunCommand("docker-compose", []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "ps", "-q"})
-	if err != nil {
-		return errors.New("failed to check for running containers")
-	}
-	if len(output) == 0 {
-		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "up", "--remove-orphans", "-d"}
-		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
-		if err != nil {
-			return errors.New("container startup failed")
-		}
-
-		log.Info("Waiting for database server ...")
-		tries := 1
-		for {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
-			if err != nil {
-				return errors.New("failed to check for database server container health")
-			}
-			if strings.TrimSpace(output) == "healthy" {
-				break
-			}
-			if tries == 10 {
-				return errors.New("timeout waiting for database server to start")
-			}
-			tries++
-			time.Sleep(3 * time.Second)
-		}
-	}
-	return nil
 }
