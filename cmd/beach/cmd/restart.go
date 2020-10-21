@@ -43,7 +43,7 @@ func handleRestartRun(cmd *cobra.Command, args []string) {
 
 	sandbox, err := beachsandbox.GetActiveSandbox()
 	if err != nil {
-		log.Fatal("Could not activate sandbox")
+		log.Fatal("Could not activate sandbox: ", err)
 		return
 	}
 

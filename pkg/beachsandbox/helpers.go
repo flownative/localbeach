@@ -24,11 +24,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var ErrNoLocalBeachConfigurationFound = errors.New("found a Flow or Neos installation but no Local Beach configuration – run \"beach init\" to create some")
+var ErrNoFlowFound = errors.New("could not find Flow or Neos installation in your current path - try running \"composer install\" to fix that")
+
 func detectProjectRootPathFromWorkingDir() (rootPath string, err error) {
 	workingDirPath, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
-		return
+		return "", err
 	}
 
 	return detectProjectRootPath(workingDirPath)
@@ -41,9 +44,9 @@ func detectProjectRootPath(currentPath string) (projectRootPath string, err erro
 		if _, err := os.Stat(projectRootPath + "/.localbeach.docker-compose.yaml"); err == nil {
 			return projectRootPath, err
 		}
-		return projectRootPath, errors.New("found a Flow or Neos installation but no Local Beach configuration – run \"beach init\" to create some")
+		return projectRootPath, ErrNoLocalBeachConfigurationFound
 	} else if projectRootPath == "/" {
-		return "", errors.New("could not find Flow or Neos installation in your current path")
+		return "", ErrNoFlowFound
 	}
 
 	return detectProjectRootPath(path.Dir(projectRootPath))
