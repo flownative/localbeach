@@ -35,19 +35,24 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 	return nil
 }
 
-// GetActiveSandbox returns the sandbox based on the current working dir
+// GetActiveSandbox returns the active sandbox based on the current working dir
 func GetActiveSandbox() (*BeachSandbox, error) {
 	rootPath, err := detectProjectRootPathFromWorkingDir()
 	if err != nil {
 		return nil, err
 	}
 
-	sandbox := &BeachSandbox{}
-	if err := sandbox.Init(rootPath); err != nil {
-		return sandbox, err
+	return GetSandbox(rootPath)
+}
+
+// GetRawSandbox returns the (unconfigured) sandbox based on the current working dir
+func GetRawSandbox() (*BeachSandbox, error) {
+	rootPath, err := detectProjectRootPathFromWorkingDir()
+	if err == ErrNoFlowFound {
+		return nil, err
 	}
 
-	return sandbox, nil
+	return GetSandbox(rootPath)
 }
 
 // GetSandbox returns the sandbox based on the given dir

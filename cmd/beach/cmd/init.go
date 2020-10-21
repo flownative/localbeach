@@ -43,7 +43,11 @@ func init() {
 }
 
 func handleInitRun(cmd *cobra.Command, args []string) {
-	sandbox, err := beachsandbox.GetActiveSandbox()
+	sandbox, err := beachsandbox.GetRawSandbox()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	projectNameFilter := regexp.MustCompile(`[^a-zA-Z0-9-]`)
 	projectName := strings.Trim(projectName, " ")
@@ -60,10 +64,18 @@ func handleInitRun(cmd *cobra.Command, args []string) {
 
 	log.Info("Project name set as " + projectName)
 
-	copyFileFromAssets("project/.localbeach.docker-compose.yaml", ".localbeach.docker-compose.yaml")
+	_, err = copyFileFromAssets("project/.localbeach.docker-compose.yaml", ".localbeach.docker-compose.yaml")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 	log.Info("Created '.localbeach.docker-compose.yaml'.")
 
-	copyFileFromAssets("project/Settings.yaml", "Configuration/Development/Beach/Settings.yaml")
+	_, err = copyFileFromAssets("project/Settings.yaml", "Configuration/Development/Beach/Settings.yaml")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 	log.Info("Created 'Configuration/Development/Beach/Settings.yaml'.")
 
 	environmentContent := readFileFromAssets("project/.localbeach.dist.env")
