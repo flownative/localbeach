@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"errors"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -34,6 +35,9 @@ func init() {
 }
 
 func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
+	log.Info("Setting up HTTPS for Local Beach.")
+	log.Info("You will be asked for your password in order to install the CA certificate")
+
 	commandArgs := []string{"-install"}
 	err := exec.RunInteractiveCommand("mkcert", commandArgs)
 	if err != nil {
@@ -48,12 +52,19 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	log.Info("Restarting reverse proxy ...")
-	commandArgs = []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "restart"}
-	output, err := exec.RunCommand("docker-compose", commandArgs)
+	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
 	if err != nil {
-		log.Fatal(output)
-		return
+		log.Error(errors.New("failed checking status of container local_beach_nginx container"))
+	}
+
+	if len(nginxStatusOutput) != 0 {
+		log.Info("Restarting reverse proxy ...")
+		commandArgs = []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "restart"}
+		output, err := exec.RunCommand("docker-compose", commandArgs)
+		if err != nil {
+			log.Fatal(output)
+			return
+		}
 	}
 
 	return
