@@ -38,7 +38,7 @@ var startCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().BoolVarP(&startPull , "pull", "p", true, "Pull images before start")
+	startCmd.Flags().BoolVarP(&startPull , "pull", "p", false, "Pull images before start")
 }
 
 func handleStartRun(cmd *cobra.Command, args []string) {
@@ -64,8 +64,6 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 			log.Fatal(output)
 			return
 		}
-	} else {
-		log.Info("Skipping image pull")
 	}
 
 	commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
