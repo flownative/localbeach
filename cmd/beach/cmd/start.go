@@ -88,14 +88,13 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 func startLocalBeach() error {
 	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
 	if err != nil {
-		return errors.New("failed checking status of container local_beach_nginx container")
+		return errors.New("failed checking status of container local_beach_nginx container, maybe the Docker daemon is not running")
 	}
 
 	databaseStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_database", "--filter", "status=running", "-q"})
 	if err != nil {
 		return errors.New("failed checking status of container local_beach_database container")
 	}
-
 
 	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
 		log.Info("Starting reverse proxy and database server ...")
