@@ -15,7 +15,7 @@ services:
       - "443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
-      - {{certificatesPath}}:/etc/nginx/certs
+      - /usr/local/lib/localbeach/certificates:/etc/nginx/certs
     environment:
       - DEFAULT_HOST=hello.localbeach.net
   database:
@@ -24,7 +24,7 @@ services:
     networks:
       - local_beach
     volumes:
-      - {{databasePath}}:/var/lib/mysql
+      - ~/Library/Application Support/Flownative/Local Beach/MariaDB:/var/lib/mysql
     healthcheck:
       test: "/usr/bin/mysql --user=root --password=password --execute \"SHOW DATABASES;\""
       interval: 3s

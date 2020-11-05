@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/flownative/localbeach/pkg/path"
 	"strings"
 	"time"
 
@@ -98,7 +99,7 @@ func startLocalBeach() error {
 
 	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
 		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "up", "--remove-orphans", "-d"}
+		commandArgs := []string{"-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
 		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")

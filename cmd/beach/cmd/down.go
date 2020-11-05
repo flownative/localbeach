@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"errors"
+	"github.com/flownative/localbeach/pkg/path"
 	"path/filepath"
 	"strings"
 
@@ -61,7 +62,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("Stopping reverse proxy and database server ...")
-	commandArgs := []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "rm", "--force", "--stop", "-v"}
+	commandArgs := []string{"-f", path.Base + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
 	output, err := exec.RunCommand("docker-compose", commandArgs)
 	if err != nil {
 		log.Fatal(output)

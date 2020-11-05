@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"github.com/flownative/localbeach/pkg/path"
 	"os"
 	"path/filepath"
 	"strings"
@@ -23,52 +24,44 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var dockerFolder string
-var databaseFolder string
-
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
 	Use:   "setup",
-	Short: "Setup Local Beach on this host",
-	Long:  "",
+	Short: "Setup Local Beach on this computer",
+	Long:  "This command is usually run automatically during installation (for example by the Homebrew setup scripts).",
 	Args:  cobra.ExactArgs(0),
 	Run:   handleSetupRun,
 }
 
 func init() {
-	setupCmd.Flags().StringVar(&dockerFolder, "docker-folder", "", "Defines the folder used for docker metadata.")
-	setupCmd.Flags().StringVar(&databaseFolder, "database-folder", "", "Defines the folder used for the database server.")
 	rootCmd.AddCommand(setupCmd)
 }
 
 func handleSetupRun(cmd *cobra.Command, args []string) {
-	if len(databaseFolder) == 0 {
-		log.Fatal("database-folder must be given.")
-		return
-	}
-	if len(dockerFolder) == 0 {
-		log.Fatal("docker-folder must be given.")
-		return
-	}
-	err := os.MkdirAll(databaseFolder, os.ModePerm)
-	if err != nil {
-		log.Error(err)
-	}
-	err = os.MkdirAll(dockerFolder, os.ModePerm)
+	log.Debug("setting up Local Beach with base path " + path.Base)
+
+	err := os.MkdirAll(path.Base, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}
 
-	err = os.MkdirAll("/usr/local/lib/localbeach/certificates", os.ModePerm)
+	log.Debug("creating directory for certificates at " + path.Certificates)
+	err = os.MkdirAll(path.Certificates, os.ModePerm)
+	if err != nil {
+		log.Error(err)
+	}
+
+	log.Debug("creating directory for databases at " + path.Database)
+	err = os.MkdirAll(path.Database, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}
 
 	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databaseFolder}}", databaseFolder)
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
 
-	destination, err := os.Create(filepath.Join(dockerFolder, "docker-compose.yml"))
-	defer destination.Close()
+	destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
 	if err != nil {
 		log.Error("failed creating docker-compose.yml: ", err)
 	} else {
@@ -78,5 +71,6 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 		}
 
 	}
+	_ = destination.Close()
 	return
 }

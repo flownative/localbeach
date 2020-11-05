@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"github.com/flownative/localbeach/pkg/exec"
+	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -45,7 +46,7 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs = []string{"-cert-file", "/usr/local/lib/localbeach/certificates/default.crt", "-key-file", "/usr/local/lib/localbeach/certificates/default.key", "*.localbeach.net"}
+	commandArgs = []string{"-cert-file", path.Certificates + "default.crt", "-key-file", path.Certificates + "default.key", "*.localbeach.net"}
 	err = exec.RunInteractiveCommand("mkcert", commandArgs)
 	if err != nil {
 		log.Error(err)
@@ -59,7 +60,7 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 
 	if len(nginxStatusOutput) != 0 {
 		log.Info("Restarting reverse proxy ...")
-		commandArgs = []string{"-f", "/usr/local/lib/localbeach/docker-compose.yml", "restart"}
+		commandArgs = []string{"-f", path.Base + "docker-compose.yml", "restart"}
 		output, err := exec.RunCommand("docker-compose", commandArgs)
 		if err != nil {
 			log.Fatal(output)
