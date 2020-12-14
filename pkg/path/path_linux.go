@@ -23,6 +23,7 @@ import (
 	"os"
 )
 
+var OldBase = ""
 var Base = ""
 var Certificates = ""
 var  Database = ""
@@ -35,7 +36,8 @@ func init() {
 		return
 	}
 
-	Base = homeDir + "/.Flownative/Local Beach/"
-	Certificates = Base + "Nginx/Certificates/"
+	OldBase = homeDir + "/.Flownative/Local Beach/"
+	Base = homeDir + "/.LocalBeach/"
+	Certificates = Base + "Certificates/"
 	Database = Base + "MariaDB/"
 }

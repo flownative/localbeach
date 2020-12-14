@@ -15,13 +15,13 @@
 package cmd
 
 import (
+	"github.com/flownative/localbeach/pkg/exec"
 	"github.com/flownative/localbeach/pkg/path"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
 
 // setupCmd represents the setup command
@@ -45,15 +45,64 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 		log.Error(err)
 	}
 
+	_, err = os.Stat(path.OldBase)
+	if err == nil {
+		log.Info("migrating old data from " + path.OldBase + " to " + path.Base)
+
+		log.Info("stopping reverse proxy and database server")
+		commandArgs := []string{"-f", path.OldBase + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
+		output, err := exec.RunCommand("docker-compose", commandArgs)
+		if err != nil {
+			log.Error(output)
+		}
+
+		log.Info("moving certificates")
+		err = os.Rename(path.OldBase + "Nginx/Certificates", path.Certificates)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.Error(err)
+			} else {
+				log.Fatal(err)
+				return
+			}
+		}
+
+		log.Info("moving database data")
+		err = os.Rename(path.OldBase + "MariaDB", path.Database)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.Error(err)
+			} else {
+				log.Fatal(err)
+				return
+			}
+		}
+
+		err = os.RemoveAll(path.OldBase + "Nginx")
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = os.Remove(path.OldBase + "docker-compose.yml")
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = os.RemoveAll(path.OldBase)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
 	log.Debug("creating directory for certificates at " + path.Certificates)
 	err = os.MkdirAll(path.Certificates, os.ModePerm)
-	if err != nil {
+	if err != nil && !os.IsExist(err){
 		log.Error(err)
 	}
 
 	log.Debug("creating directory for databases at " + path.Database)
 	err = os.MkdirAll(path.Database, os.ModePerm)
-	if err != nil {
+	if err != nil && !os.IsExist(err){
 		log.Error(err)
 	}
 
