@@ -17,6 +17,7 @@ package cmd
 import (
 	"errors"
 	"github.com/flownative/localbeach/pkg/path"
+	"os"
 	"strings"
 	"time"
 
@@ -87,6 +88,14 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 }
 
 func startLocalBeach() error {
+	_, err := os.Stat(path.Base)
+	if os.IsNotExist(err) {
+		err = setupLocalBeach()
+		if err != nil {
+			return err
+		}
+	}
+
 	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
 	if err != nil {
 		return errors.New("failed checking status of container local_beach_nginx container, maybe the Docker daemon is not running")

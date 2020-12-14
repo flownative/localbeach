@@ -26,7 +26,6 @@ class Localbeach < Formula
 
   def install
     bin.install "beach" => "beach"
-    system "#{bin}/beach", "setup"
   end
 
   def caveats

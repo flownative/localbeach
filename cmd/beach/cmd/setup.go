@@ -38,6 +38,10 @@ func init() {
 }
 
 func handleSetupRun(cmd *cobra.Command, args []string) {
+	_ = setupLocalBeach()
+}
+
+func setupLocalBeach() error {
 	log.Debug("setting up Local Beach with base path " + path.Base)
 
 	err := os.MkdirAll(path.Base, os.ModePerm)
@@ -63,7 +67,7 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 				log.Error(err)
 			} else {
 				log.Fatal(err)
-				return
+				return err
 			}
 		}
 
@@ -74,7 +78,7 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 				log.Error(err)
 			} else {
 				log.Fatal(err)
-				return
+				return err
 			}
 		}
 
@@ -121,5 +125,6 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 
 	}
 	_ = destination.Close()
-	return
+
+	return nil
 }
