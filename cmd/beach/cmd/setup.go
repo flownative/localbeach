@@ -15,60 +15,106 @@
 package cmd
 
 import (
+	"github.com/flownative/localbeach/pkg/exec"
+	"github.com/flownative/localbeach/pkg/path"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 )
-
-var dockerFolder string
-var databaseFolder string
 
 // setupCmd represents the setup command
 var setupCmd = &cobra.Command{
 	Use:   "setup",
-	Short: "Setup Local Beach on this host",
-	Long:  "",
+	Short: "Setup Local Beach on this computer",
+	Long:  "This command is usually run automatically during installation (for example by the Homebrew setup scripts).",
 	Args:  cobra.ExactArgs(0),
 	Run:   handleSetupRun,
 }
 
 func init() {
-	setupCmd.Flags().StringVar(&dockerFolder, "docker-folder", "", "Defines the folder used for docker metadata.")
-	setupCmd.Flags().StringVar(&databaseFolder, "database-folder", "", "Defines the folder used for the database server.")
 	rootCmd.AddCommand(setupCmd)
 }
 
 func handleSetupRun(cmd *cobra.Command, args []string) {
-	if len(databaseFolder) == 0 {
-		log.Fatal("database-folder must be given.")
-		return
-	}
-	if len(dockerFolder) == 0 {
-		log.Fatal("docker-folder must be given.")
-		return
-	}
-	err := os.MkdirAll(databaseFolder, os.ModePerm)
-	if err != nil {
-		log.Error(err)
-	}
-	err = os.MkdirAll(dockerFolder, os.ModePerm)
+	_ = setupLocalBeach()
+}
+
+func setupLocalBeach() error {
+	log.Debug("setting up Local Beach with base path " + path.Base)
+
+	err := os.MkdirAll(path.Base, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}
 
-	err = os.MkdirAll("/usr/local/lib/localbeach/certificates", os.ModePerm)
-	if err != nil {
+	_, err = os.Stat(path.OldBase)
+	if err == nil {
+		log.Info("migrating old data from " + path.OldBase + " to " + path.Base)
+
+		log.Info("stopping reverse proxy and database server")
+		commandArgs := []string{"-f", path.OldBase + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
+		output, err := exec.RunCommand("docker-compose", commandArgs)
+		if err != nil {
+			log.Error(output)
+		}
+
+		log.Info("moving certificates")
+		err = os.Rename(path.OldBase + "Nginx/Certificates", path.Certificates)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.Error(err)
+			} else {
+				log.Fatal(err)
+				return err
+			}
+		}
+
+		log.Info("moving database data")
+		err = os.Rename(path.OldBase + "MariaDB", path.Database)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.Error(err)
+			} else {
+				log.Fatal(err)
+				return err
+			}
+		}
+
+		err = os.RemoveAll(path.OldBase + "Nginx")
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = os.Remove(path.OldBase + "docker-compose.yml")
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = os.RemoveAll(path.OldBase)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+
+	log.Debug("creating directory for certificates at " + path.Certificates)
+	err = os.MkdirAll(path.Certificates, os.ModePerm)
+	if err != nil && !os.IsExist(err){
+		log.Error(err)
+	}
+
+	log.Debug("creating directory for databases at " + path.Database)
+	err = os.MkdirAll(path.Database, os.ModePerm)
+	if err != nil && !os.IsExist(err){
 		log.Error(err)
 	}
 
 	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databaseFolder}}", databaseFolder)
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
 
-	destination, err := os.Create(filepath.Join(dockerFolder, "docker-compose.yml"))
-	defer destination.Close()
+	destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
 	if err != nil {
 		log.Error("failed creating docker-compose.yml: ", err)
 	} else {
@@ -78,5 +124,7 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 		}
 
 	}
-	return
+	_ = destination.Close()
+
+	return nil
 }

@@ -26,18 +26,8 @@ beach version
 Some random notes about the internals of Local Beach:
 
 - `beach setup` is automatically invoked by Homebrew when Local Beach is installed
-- the default path for MariaDB is "~/Library/Application Support/Flownative/Local Beach/MariaDB" on MacOS and 
-  "~/.Flownative/Local Beach/MariaDB" on other systems (see .github/workflows/localbeach.rb.tpl)
-- the Docker Compose configuration for the Nginx Proxy and MariaDB can be found at "/usr/local/lib/localbeach"
-- the path for Nginx certificates is "/usr/local/lib/localbeach/certificates"
-
-During install, Homebrew runs `beach setup` as follows:
-
-```
-beach setup \
-    --database-folder ~/Library/Application\ Support/Flownative/Local\ Beach/MariaDB \
-    --docker-folder /usr/local/lib/localbeach
-```
+- the base path for Local Beach is "~/Library/Application Support/Flownative/Local Beach/" on MacOS and 
+  "~/.Flownative/Local Beach/" on other systems
 
 ## Build
 
