@@ -19,12 +19,14 @@ import (
 )
 
 type BeachSandbox struct {
-	ProjectName     string ``
-	ProjectRootPath string ``
+	ProjectName                        string ``
+	ProjectRootPath                    string ``
+	ProjectDataPersistentResourcesPath string ``
 }
 
 func (sandbox *BeachSandbox) Init(rootPath string) error {
 	sandbox.ProjectRootPath = rootPath
+	sandbox.ProjectDataPersistentResourcesPath = rootPath + "/Data/Persistent/Resources"
 
 	if err := loadLocalBeachEnvironment(rootPath); err != nil {
 		return err
