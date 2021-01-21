@@ -124,7 +124,7 @@ jobs:
         with:
           _input-file: homebrew/Formula/localbeach.rb
           _output-file: homebrew/Formula/localbeach.rb
-          _formatk-key: "{{key}}"
+          _format-key: "{{key}}"
           version: ${{ env.RELEASE_VERSION }}
           darwin_sha256sum: ${{ needs.build.outputs.darwin_sha256sum }}
           linux_sha256sum: ${{ needs.build.outputs.linux_sha256sum }}
