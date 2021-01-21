@@ -118,26 +118,16 @@ jobs:
       - name: Set RELEASE_VERSION env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-      - name: Replace version number
-        uses: shitiomatic/str-replace@master
+      # see: https://github.com/bluwy/substitute-string-action
+      - name: Substitute Homebrew variables
+        uses: bluwy/substitute-string-action@v1
         with:
-          find: "{{version}}"
-          replace: ${{ env.RELEASE_VERSION }}
-          include: homebrew/Formula/localbeach.rb
-
-      - name: Replace SHA256 sum (darwin)
-        uses: shitiomatic/str-replace@master
-        with:
-          find: "{{darwin_sha256sum}}"
-          replace: ${{needs.build.outputs.darwin_sha256sum}}
-          include: homebrew/Formula/localbeach.rb
-
-      - name: Replace SHA256 sum (linux)
-        uses: shitiomatic/str-replace@master
-        with:
-          find: "{{linux_sha256sum}}"
-          replace: ${{needs.build.outputs.linux_sha256sum}}
-          include: homebrew/Formula/localbeach.rb
+          _input-file: homebrew/Formula/localbeach.rb
+          _output-file: homebrew/Formula/localbeach.rb
+          _formatk-key: "{{key}}"
+          version: ${{ env.RELEASE_VERSION }}
+          darwin_sha256sum: ${{ needs.build.outputs.darwin_sha256sum }}
+          linux_sha256sum: ${{ needs.build.outputs.linux_sha256sum }}
 
       - name: Commit update
         run: |
