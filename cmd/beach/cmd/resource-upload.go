@@ -28,7 +28,8 @@ import (
 	"path/filepath"
 )
 
-var instanceIdentifier, projectNamespace string
+var instanceIdentifier, projectNamespace, resumeWithFile string
+var force bool
 
 // resourceUploadCmd represents the resource-upload command
 var resourceUploadCmd = &cobra.Command{
@@ -56,6 +57,8 @@ Notes:
 func init() {
 	resourceUploadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to upload to, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceUploadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to upload to, eg. 'project-123abc45-def6-7890-abcd-1234567890ab'")
+	resourceUploadCmd.Flags().BoolVar(&force, "force", false, "Force uploading resources which already exist in the target bucket")
+	resourceUploadCmd.Flags().StringVar(&resumeWithFile, "resume-with-file", "", "If specified, resume uploading resources starting with the given filename, eg. '12dcde4c13142942288c5a973caf0fa720ed2794'")
 	_ = resourceUploadCmd.MarkFlagRequired("instance")
 	_ = resourceUploadCmd.MarkFlagRequired("namespace")
 	rootCmd.AddCommand(resourceUploadCmd)
@@ -103,23 +106,40 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 	bucket := client.Bucket(bucketName)
 	for _, pathAndFilename := range fileList {
 		filename := filepath.Base(pathAndFilename)
-		file, err := os.Open(pathAndFilename)
+
+		if resumeWithFile != "" && filename < resumeWithFile {
+			log.Debug("Skipped  " + filename)
+			continue
+		}
+
+		source, err := os.Open(pathAndFilename)
 		if err != nil {
 			log.Fatal(err)
 			return
 		}
-		defer file.Close()
 
-		wc := bucket.Object(filename).NewWriter(ctx)
-		if _, err = io.Copy(wc, file); err != nil {
-			log.Fatal(err)
-			return
+		_, err = bucket.Object(filename).Attrs(ctx)
+		if err == storage.ErrObjectNotExist || force == true {
+			destination := bucket.Object(filename).NewWriter(ctx)
+			if _, err = io.Copy(destination, source); err != nil {
+				log.Fatal(err)
+				return
+			}
+			if err := destination.Close(); err != nil {
+				log.Fatal(err)
+				return
+			}
+
+			if err = source.Close(); err != nil {
+				log.Error(err)
+			} else {
+				log.Debug("Uploaded " + filename)
+			}
+		} else if err == nil {
+			log.Debug("Skipped  " + filename + " (already exists)")
+		} else {
+			log.Error(err)
 		}
-		if err := wc.Close(); err != nil {
-			log.Fatal(err)
-			return
-		}
-		log.Debug("Uploaded " + filename)
 	}
 
 	log.Info("Done")
