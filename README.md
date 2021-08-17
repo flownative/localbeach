@@ -34,10 +34,10 @@ Some random notes about the internals of Local Beach:
 To build the binary, run `make`. It does this:
  
 ```bash
-    rm -f assets/compiled.go
-    go generate -v
-    go install -v
-    go build -v -ldflags "-X github.com/flownative/localbeach/pkg/version.Version=dev" -o beach
+rm -f assets/compiled.go
+go generate -v
+go install -v
+go build -v -ldflags "-X github.com/flownative/localbeach/pkg/version.Version=dev" -o beach
 ``` 
 
 For a slightly quicker build, use `make compile`.
