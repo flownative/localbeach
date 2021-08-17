@@ -26,8 +26,8 @@ beach version
 Some random notes about the internals of Local Beach:
 
 - `beach setup` is automatically invoked by Homebrew when Local Beach is installed
-- the base path for Local Beach is "~/Library/Application Support/Flownative/Local Beach/" on MacOS and 
-  "~/.Flownative/Local Beach/" on other systems
+- the base path for Local Beach is `~/Library/Application Support/Flownative/Local Beach/` on MacOS and 
+  `~/.Flownative/Local Beach/` on other systems
 
 ## Build
 
@@ -41,10 +41,10 @@ To build the binary, run `make`. It does this:
 ``` 
 
 For a slightly quicker build, use `make compile`.
- 
- ## Credits and Support
- 
- This library was developed by Robert Lemke with major contributions by Karsten Dambekalns and Christian Müller. Feel 
- free to suggest new features, report bugs or provide bug fixes in our Github  project.
+
+## Credits and Support
+
+This library was developed by Robert Lemke with major contributions by Karsten Dambekalns and Christian Müller. Feel 
+free to suggest new features, report bugs or provide bug fixes in our Github  project.
 
 Copyright 2019-2021 Robert Lemke, Karsten Dambekalns, Christian Müller, licensed under the Apache License, version 2.0.
