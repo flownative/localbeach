@@ -2,17 +2,16 @@
 
 # Local Beach
 
-Local Beach is a development environment for [Neos CMS](https://www.neos.io) and Flow Framework. Under the hood, it's 
-using Docker, and the official Beach Docker images (Nginx, PHP and Redis). You don't need a Beach account nor be a 
-[Flownative](https://www.flownative.com) customer in order to use Local Beach because Local Beach is free (as in free
-beer, or free coffee).
+Local Beach is a development environment for [Neos CMS](https://www.neos.io) and [Flow Framework](https://flow.neos.io).
+Under the hood, it's  using Docker, and the official Beach Docker images (Nginx, PHP and Redis). You don't need a Beach
+account nor be a  [Flownative](https://www.flownative.com) customer in order to use Local Beach because Local Beach is
+free (as in free beer, or free coffee).
 
-This README currently only contains some notes about Local Beach. You may find more information on the 
+This README currently only contains basic information about Local Beach. You may find more information on the 
 [Local Beach website](https://www.flownative.com/localbeach). 
 
-Currently, automatic installation via Homebrew (on a Mac) is supported. Manual installation on Linux is *possible*, but 
-requires some fiddling. The setup instructions for Local Beach can be found in our 
-[knowledge base](https://support.flownative.com/help/en-us/14-local-beach/38-how-to-set-up-local-beach).
+Currently, automatic installation via Homebrew is supported. The setup instructions for Local Beach can be found in our 
+[knowledge base](https://www.flownative.com/en/documentation/guides/localbeach/composer-in-local-beach.html).
  
 tldr;
 ```
