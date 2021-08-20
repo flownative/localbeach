@@ -70,6 +70,9 @@ func loadLocalBeachEnvironment(projectRootPath string) (err error) {
 				trimmedLine := strings.TrimSpace(line)
 				if len(trimmedLine) > 0 && !strings.HasPrefix(trimmedLine, "#") {
 					nameAndValue := strings.Split(trimmedLine, "=")
+					if len(nameAndValue) != 2 {
+						return errors.New("failed parsing environment variable " + nameAndValue[0])
+					}
 					if err := os.Setenv(nameAndValue[0], nameAndValue[1]); err != nil {
 						return errors.New("failed setting environment variable " + nameAndValue[0])
 					}
