@@ -141,6 +141,6 @@ jobs:
       - name: Push to git
         uses: ad-m/github-push-action@v0.6.0
         with:
-          github_token: ${{ secrets.GITHUB_BOT_TOKEN }}
+          github_token: ${{ secrets.FLOWNATIVE_BOT_TOKEN }}
           repository: flownative/homebrew-flownative
           directory: homebrew
