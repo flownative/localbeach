@@ -18,6 +18,7 @@ import (
 	"errors"
 	"github.com/flownative/localbeach/pkg/path"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -107,6 +108,22 @@ func startLocalBeach() error {
 	}
 
 	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
+		composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
+		composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
+		composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
+
+		destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
+		if err != nil {
+			log.Error("failed creating docker-compose.yml: ", err)
+		} else {
+			_, err = destination.WriteString(composeFileContent)
+			if err != nil {
+				log.Error(err)
+			}
+
+		}
+		_ = destination.Close()
+
 		log.Info("Starting reverse proxy and database server ...")
 		commandArgs := []string{"-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
 		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
