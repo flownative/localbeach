@@ -85,6 +85,8 @@ func retrieveCloudStorageCredentials(instanceIdentifier string, projectNamespace
 	}
 
 	if len(bucketName) == 0 {
+		log.Debug("Received the following output while fetching BEACH_GOOGLE_CLOUD_STORAGE_* variables:")
+		log.Debug(output)
 		return errors.New("could not determine cloud storage bucket name from instance variables"), "", []byte("")
 	}
 	log.Debug("Using cloud storage bucket " + bucketName)
