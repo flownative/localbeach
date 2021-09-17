@@ -2,8 +2,7 @@ version: '3.7'
 
 networks:
   local_beach:
-    external:
-      name: local_beach
+    external: true
 
 volumes:
   application:
