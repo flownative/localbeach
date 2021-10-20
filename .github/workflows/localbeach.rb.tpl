@@ -17,8 +17,6 @@ class Localbeach < Formula
     sha256 "{{linux_sha256sum}}"
   end
 
-  conflicts_with "flownative/flownative/beach-cli", because: "localbeach replaces beach-cli"
-
   depends_on "mkcert" => :run
   depends_on "nss" => :run
 
