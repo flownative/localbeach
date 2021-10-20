@@ -5,12 +5,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/flownative/localbeach/pkg/exec"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/flownative/localbeach/pkg/exec"
+	log "github.com/sirupsen/logrus"
 
 	asset "github.com/flownative/localbeach/assets"
 )
