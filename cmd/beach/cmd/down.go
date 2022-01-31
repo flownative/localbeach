@@ -17,9 +17,10 @@ package cmd
 
 import (
 	"errors"
-	"github.com/flownative/localbeach/pkg/path"
 	"path/filepath"
 	"strings"
+
+	"github.com/flownative/localbeach/pkg/path"
 
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
@@ -53,8 +54,8 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 			log.Fatal(err)
 			return
 		}
-		commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "rm", "--force", "--stop", "-v"}
-		output, err := exec.RunCommand("docker-compose", commandArgs)
+		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "rm", "--force", "--stop", "-v"}
+		output, err := exec.RunCommand("docker", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
@@ -62,8 +63,8 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("Stopping reverse proxy and database server ...")
-	commandArgs := []string{"-f", path.Base + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
-	output, err := exec.RunCommand("docker-compose", commandArgs)
+	commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
+	output, err := exec.RunCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return

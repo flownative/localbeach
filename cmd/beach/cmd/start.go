@@ -16,11 +16,12 @@ package cmd
 
 import (
 	"errors"
-	"github.com/flownative/localbeach/pkg/path"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/flownative/localbeach/pkg/path"
 
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
@@ -41,7 +42,7 @@ var startCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().BoolVarP(&startPull , "pull", "p", false, "Pull images before start")
+	startCmd.Flags().BoolVarP(&startPull, "pull", "p", false, "Pull images before start")
 }
 
 func handleStartRun(cmd *cobra.Command, args []string) {
@@ -59,18 +60,18 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if startPull  {
+	if startPull {
 		log.Debug("Pulling images ...")
-		commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
-		output, err := exec.RunCommand("docker-compose", commandArgs)
+		commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
+		output, err := exec.RunCommand("docker", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
 		}
 	}
 
-	commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
-	output, err := exec.RunCommand("docker-compose", commandArgs)
+	commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
+	output, err := exec.RunCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
@@ -125,8 +126,8 @@ func startLocalBeach() error {
 		_ = destination.Close()
 
 		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
-		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+		commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
+		err = exec.RunInteractiveCommand("docker", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")
 		}
