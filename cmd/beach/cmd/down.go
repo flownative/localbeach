@@ -54,7 +54,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 			log.Fatal(err)
 			return
 		}
-		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "rm", "--force", "--stop", "-v"}
+		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "down", "-v"}
 		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
@@ -63,7 +63,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("Stopping reverse proxy and database server ...")
-	commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "rm", "--force", "--stop", "-v"}
+	commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "down", "-v"}
 	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
