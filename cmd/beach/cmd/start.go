@@ -109,13 +109,13 @@ func startLocalBeach() error {
 	}
 
 	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
-		composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
+		composeFileContent := readFileFromAssets("local-beach/compose.yaml")
 		composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
 		composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
 
-		destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
+		destination, err := os.Create(filepath.Join(path.Base, "compose.yaml"))
 		if err != nil {
-			log.Error("failed creating docker-compose.yml: ", err)
+			log.Error("failed creating compose.yaml: ", err)
 		} else {
 			_, err = destination.WriteString(composeFileContent)
 			if err != nil {
@@ -126,7 +126,7 @@ func startLocalBeach() error {
 		_ = destination.Close()
 
 		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
+		commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "up", "--remove-orphans", "-d"}
 		err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")
