@@ -75,14 +75,23 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 
 func findInstanceRoots() ([]string, error) {
 	var configurationFiles []string
+	var containerData []string
+	var containerID string
+	var containerName string
 
-	output, err := exec.RunCommand("nerdctl", []string{"ps", "-q", "--filter", "network=local_beach"})
+	output, err := exec.RunCommand("nerdctl", []string{"ps", "--format", "{{.ID}} {{.Names}}"})
 	if err != nil {
 		return nil, errors.New(output)
 	}
 	for _, line := range strings.Split(output, "\n") {
-		containerID := strings.TrimSpace(line)
-		if len(containerID) > 0 {
+		containerData = strings.Split(line, " ")
+		containerID = strings.TrimSpace(containerData[0])
+		containerName = ""
+		if len(containerData) > 1 {
+			containerName = strings.TrimSpace(containerData[1])
+		}
+
+		if len(containerID) > 0 && strings.Contains(containerName, "_devkit") {
 			output, err := exec.RunCommand("nerdctl", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
 			if err != nil {
 				return nil, errors.New(output)

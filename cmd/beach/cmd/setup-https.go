@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/flownative/localbeach/pkg/exec"
 	"github.com/flownative/localbeach/pkg/path"
@@ -61,12 +62,12 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	nginxStatusOutput, err := exec.RunCommand("nerdctl", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
+	statusOutput, err := exec.RunCommand("nerdctl", []string{"ps", "--format", "{{.Names}}"})
 	if err != nil {
 		log.Error(errors.New("failed checking status of container local_beach_nginx container"))
 	}
 
-	if len(nginxStatusOutput) != 0 {
+	if !strings.Contains(statusOutput, "local_beach_nginx") {
 		log.Info("Restarting reverse proxy ...")
 		commandArgs = []string{"compose", "-f", path.Base + "compose.yaml", "restart"}
 		output, err := exec.RunCommand("nerdctl", commandArgs)
