@@ -98,17 +98,12 @@ func startLocalBeach() error {
 		}
 	}
 
-	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
+	statusOutput, err := exec.RunCommand("nerdctl", []string{"ps", "--format", "{{.Names}}"})
 	if err != nil {
-		return errors.New("failed checking status of container local_beach_nginx container, maybe the Docker daemon is not running")
+		return errors.New("failed checking status of containers, maybe the container system (docker or containerd) is not running")
 	}
 
-	databaseStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_database", "--filter", "status=running", "-q"})
-	if err != nil {
-		return errors.New("failed checking status of container local_beach_database container")
-	}
-
-	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
+	if !strings.Contains(statusOutput, "local_beach_nginx") || !strings.Contains(statusOutput, "local_beach_database") {
 		composeFileContent := readFileFromAssets("local-beach/compose.yaml")
 		composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
 		composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
