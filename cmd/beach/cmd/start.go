@@ -121,7 +121,7 @@ func startLocalBeach() error {
 		_ = destination.Close()
 
 		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "up", "--remove-orphans", "-d"}
+		commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "up", "--remove-orphans", "-d", "-p", "LocalBeach"}
 		err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")
