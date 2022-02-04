@@ -47,7 +47,7 @@ func handleStopRun(cmd *cobra.Command, args []string) {
 	commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml"}
 
 	if stopRemove {
-		commandArgs = append(commandArgs, "down", "--remove-orphans", "--volumes")
+		commandArgs = append(commandArgs, "down", "--volumes")
 	} else {
 		commandArgs = append(commandArgs, "stop")
 	}
