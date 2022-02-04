@@ -52,7 +52,7 @@ func handleStopRun(cmd *cobra.Command, args []string) {
 		commandArgs = append(commandArgs, "stop")
 	}
 
-	err = exec.RunInteractiveCommand("docker", commandArgs)
+	err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(err)
 		return

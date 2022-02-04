@@ -63,7 +63,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	if startPull {
 		log.Debug("Pulling images ...")
 		commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
-		output, err := exec.RunCommand("docker", commandArgs)
+		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
@@ -71,14 +71,14 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	}
 
 	commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
-	output, err := exec.RunCommand("docker", commandArgs)
+	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
 	}
 
 	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
-	output, err = exec.RunCommand("docker", commandArgs)
+	output, err = exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
@@ -127,7 +127,7 @@ func startLocalBeach() error {
 
 		log.Info("Starting reverse proxy and database server ...")
 		commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
-		err = exec.RunInteractiveCommand("docker", commandArgs)
+		err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")
 		}
@@ -135,7 +135,7 @@ func startLocalBeach() error {
 		log.Info("Waiting for database server ...")
 		tries := 1
 		for {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
+			output, err := exec.RunCommand("nerdctl", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
 			if err != nil {
 				return errors.New("failed to check for database server container health")
 			}
