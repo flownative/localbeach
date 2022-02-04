@@ -44,15 +44,15 @@ func handleStopRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml"}
+	commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml"}
 
 	if stopRemove {
-		commandArgs = append(commandArgs, "down", "--remove-orphans", "--volumes")
+		commandArgs = append(commandArgs, "down", "--volumes")
 	} else {
 		commandArgs = append(commandArgs, "stop")
 	}
 
-	err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+	err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(err)
 		return

@@ -17,11 +17,12 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 // execCmd represents the exec command
@@ -51,7 +52,7 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 		commandArgs = append(commandArgs, "bash")
 	}
 
-	err = exec.RunInteractiveCommand("docker", commandArgs)
+	err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(err)
 		return
