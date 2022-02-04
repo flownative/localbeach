@@ -61,7 +61,7 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
+	nginxStatusOutput, err := exec.RunCommand("nerdctl", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
 	if err != nil {
 		log.Error(errors.New("failed checking status of container local_beach_nginx container"))
 	}
@@ -69,7 +69,7 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 	if len(nginxStatusOutput) != 0 {
 		log.Info("Restarting reverse proxy ...")
 		commandArgs = []string{"compose", "-f", path.Base + "docker-compose.yml", "restart"}
-		output, err := exec.RunCommand("docker", commandArgs)
+		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return

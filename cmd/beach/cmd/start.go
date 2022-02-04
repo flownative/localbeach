@@ -55,7 +55,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	if startPull {
 		log.Debug("Pulling images ...")
 		commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
-		output, err := exec.RunCommand("docker", commandArgs)
+		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
@@ -64,7 +64,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 
 	log.Info("Starting project ...")
 	commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
-	output, err := exec.RunCommand("docker", commandArgs)
+	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
@@ -72,7 +72,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 
 	log.Debug("Creating project database (if needed) ...")
 	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
-	output, err = exec.RunCommand("docker", commandArgs)
+	output, err = exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return

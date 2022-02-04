@@ -46,7 +46,7 @@ Docker containers (--containers).`,
 			if follow {
 				commandArgs = append(commandArgs, "-f")
 			}
-			err = exec.RunInteractiveCommand("docker", commandArgs)
+			err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 			if err != nil {
 				log.Fatal(err)
 				return
@@ -59,7 +59,7 @@ Docker containers (--containers).`,
 				commandArgs = append(commandArgs, "bash", "-c", "tail -n -"+strconv.Itoa(tail)+" /application/Data/Logs/*.log")
 			}
 
-			err = exec.RunInteractiveCommand("docker", commandArgs)
+			err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 			if err != nil {
 				log.Fatal(err)
 				return

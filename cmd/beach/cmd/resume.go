@@ -37,7 +37,7 @@ func init() {
 func handleResumeRun(cmd *cobra.Command, args []string) {
 	log.Info("Starting reverse proxy and database server ...")
 	commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "start", "webserver", "database"}
-	output, err := exec.RunCommand("docker", commandArgs)
+	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return

@@ -55,7 +55,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 			return
 		}
 		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "rm", "--force", "--stop", "-v"}
-		output, err := exec.RunCommand("docker", commandArgs)
+		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
@@ -64,7 +64,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 
 	log.Info("Stopping reverse proxy and database server ...")
 	commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
-	output, err := exec.RunCommand("docker", commandArgs)
+	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
@@ -76,14 +76,14 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 func findInstanceRoots() ([]string, error) {
 	var configurationFiles []string
 
-	output, err := exec.RunCommand("docker", []string{"ps", "-q", "--filter", "network=local_beach"})
+	output, err := exec.RunCommand("nerdctl", []string{"ps", "-q", "--filter", "network=local_beach"})
 	if err != nil {
 		return nil, errors.New(output)
 	}
 	for _, line := range strings.Split(output, "\n") {
 		containerID := strings.TrimSpace(line)
 		if len(containerID) > 0 {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
+			output, err := exec.RunCommand("nerdctl", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
 			if err != nil {
 				return nil, errors.New(output)
 			}

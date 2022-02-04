@@ -56,7 +56,7 @@ func setupLocalBeach() error {
 
 		log.Info("stopping reverse proxy and database server")
 		commandArgs := []string{"compose", "-f", path.OldBase + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
-		output, err := exec.RunCommand("docker", commandArgs)
+		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Error(output)
 		}
