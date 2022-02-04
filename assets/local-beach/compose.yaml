@@ -19,6 +19,7 @@ services:
   database:
     image: mariadb:10.11
     container_name: local_beach_database
+    user: 501:20
     networks:
       - local_beach
     volumes:

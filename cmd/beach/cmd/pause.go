@@ -36,7 +36,7 @@ func init() {
 
 func handlePauseRun(cmd *cobra.Command, args []string) {
 	log.Info("Pausing reverse proxy and database server ...")
-	commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "stop", "webserver", "database"}
+	commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "stop", "webserver", "database"}
 	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)

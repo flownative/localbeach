@@ -63,7 +63,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("Stopping reverse proxy and database server ...")
-	commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
+	commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "rm", "--force", "--stop", "-v"}
 	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)

@@ -111,13 +111,13 @@ func setupLocalBeach() error {
 		log.Error(err)
 	}
 
-	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
+	composeFileContent := readFileFromAssets("local-beach/compose.yaml")
 	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
 	composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
 
-	destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
+	destination, err := os.Create(filepath.Join(path.Base, "compose.yaml"))
 	if err != nil {
-		log.Error("failed creating docker-compose.yml: ", err)
+		log.Error("failed creating compose.yaml: ", err)
 	} else {
 		_, err = destination.WriteString(composeFileContent)
 		if err != nil {

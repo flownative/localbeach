@@ -68,7 +68,7 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 
 	if len(nginxStatusOutput) != 0 {
 		log.Info("Restarting reverse proxy ...")
-		commandArgs = []string{"compose", "-f", path.Base + "docker-compose.yml", "restart"}
+		commandArgs = []string{"compose", "-f", path.Base + "compose.yaml", "restart"}
 		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
