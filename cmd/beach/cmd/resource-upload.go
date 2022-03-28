@@ -16,16 +16,17 @@
 package cmd
 
 import (
-	"cloud.google.com/go/storage"
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+
+	"cloud.google.com/go/storage"
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"google.golang.org/api/option"
-	"io"
-	"os"
-	"path/filepath"
 )
 
 var instanceIdentifier, projectNamespace, resumeWithFile string
@@ -50,8 +51,8 @@ Notes:
  - existing data in the Beach instance will be left unchanged
  - older instances may use a namespace called "beach"
 `,
-	Args:  cobra.ExactArgs(0),
-	Run:   handleResourceUploadRun,
+	Args: cobra.ExactArgs(0),
+	Run:  handleResourceUploadRun,
 }
 
 func init() {
@@ -112,20 +113,21 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 			continue
 		}
 
-		source, err := os.Open(pathAndFilename)
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
-
 		_, err = bucket.Object(filename).Attrs(ctx)
 		if err == storage.ErrObjectNotExist || force == true {
+			source, err := os.Open(pathAndFilename)
+			if err != nil {
+				log.Fatal(err)
+				return
+			}
 			destination := bucket.Object(filename).NewWriter(ctx)
 			if _, err = io.Copy(destination, source); err != nil {
+				source.Close()
 				log.Fatal(err)
 				return
 			}
 			if err := destination.Close(); err != nil {
+				source.Close()
 				log.Fatal(err)
 				return
 			}
