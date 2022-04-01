@@ -69,7 +69,7 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 
 	if !strings.Contains(statusOutput, "local_beach_nginx") {
 		log.Info("Restarting reverse proxy ...")
-		commandArgs = []string{"compose", "-f", path.Base + "compose.yaml", "restart"}
+		commandArgs = []string{"compose", "-f", path.Base + "compose.yaml", "-p", "LocalBeach", "restart"}
 		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
