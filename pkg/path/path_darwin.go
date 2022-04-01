@@ -14,6 +14,7 @@
 
 // 💡 See https://golang.org/cmd/go/#hdr-Build_constraints for explanation of build constraints
 
+//go:build darwin
 // +build darwin
 
 package path
@@ -26,7 +27,7 @@ import (
 var OldBase = ""
 var Base = ""
 var Certificates = ""
-var  Database = ""
+var Database = ""
 
 func init() {
 	homeDir, err := os.UserHomeDir()
