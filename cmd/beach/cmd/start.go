@@ -16,11 +16,12 @@ package cmd
 
 import (
 	"errors"
-	"github.com/flownative/localbeach/pkg/path"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/flownative/localbeach/pkg/path"
 
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
@@ -41,7 +42,7 @@ var startCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(startCmd)
-	startCmd.Flags().BoolVarP(&startPull , "pull", "p", false, "Pull images before start")
+	startCmd.Flags().BoolVarP(&startPull, "pull", "p", false, "Pull images before start")
 }
 
 func handleStartRun(cmd *cobra.Command, args []string) {
@@ -59,7 +60,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if startPull  {
+	if startPull {
 		log.Debug("Pulling images ...")
 		commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
 		output, err := exec.RunCommand("docker-compose", commandArgs)
@@ -69,6 +70,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	log.Info("Starting project ...")
 	commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
 	output, err := exec.RunCommand("docker-compose", commandArgs)
 	if err != nil {
@@ -76,6 +78,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	log.Debug("Creating project database (if needed) ...")
 	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
 	output, err = exec.RunCommand("docker", commandArgs)
 	if err != nil {
@@ -85,7 +88,6 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 
 	log.Info("You are all set")
 	log.Info("When files have been synced, you can access this instance at http://" + sandbox.ProjectName + ".localbeach.net")
-	return
 }
 
 func startLocalBeach() error {
