@@ -47,6 +47,12 @@ func handleRestartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	err = startLocalBeach()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
 	commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml"}
 	if restartRemove {
 		log.Debug("Stopping and removing containers ...")

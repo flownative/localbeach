@@ -15,14 +15,6 @@
 package cmd
 
 import (
-	"errors"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
-
-	"github.com/flownative/localbeach/pkg/path"
-
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
@@ -88,67 +80,4 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 
 	log.Info("You are all set")
 	log.Info("When files have been synced, you can access this instance at http://" + sandbox.ProjectName + ".localbeach.net")
-}
-
-func startLocalBeach() error {
-	_, err := os.Stat(path.Base)
-	if os.IsNotExist(err) {
-		err = setupLocalBeach()
-		if err != nil {
-			return err
-		}
-	}
-
-	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
-	if err != nil {
-		return errors.New("failed checking status of container local_beach_nginx container, maybe the Docker daemon is not running")
-	}
-
-	databaseStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_database", "--filter", "status=running", "-q"})
-	if err != nil {
-		return errors.New("failed checking status of container local_beach_database container")
-	}
-
-	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
-		composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-		composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
-		composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
-
-		destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
-		if err != nil {
-			log.Error("failed creating docker-compose.yml: ", err)
-		} else {
-			_, err = destination.WriteString(composeFileContent)
-			if err != nil {
-				log.Error(err)
-			}
-
-		}
-		_ = destination.Close()
-
-		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
-		err = exec.RunInteractiveCommand("docker", commandArgs)
-		if err != nil {
-			return errors.New("container startup failed")
-		}
-
-		log.Info("Waiting for database server ...")
-		tries := 1
-		for {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
-			if err != nil {
-				return errors.New("failed to check for database server container health")
-			}
-			if strings.TrimSpace(output) == "healthy" {
-				break
-			}
-			if tries == 10 {
-				return errors.New("timeout waiting for database server to start")
-			}
-			tries++
-			time.Sleep(3 * time.Second)
-		}
-	}
-	return nil
 }
