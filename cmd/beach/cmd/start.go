@@ -62,8 +62,8 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 
 	if startPull {
 		log.Debug("Pulling images ...")
-		commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
-		output, err := exec.RunCommand("docker-compose", commandArgs)
+		commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
+		output, err := exec.RunCommand("docker", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
@@ -71,8 +71,8 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("Starting project ...")
-	commandArgs = []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
-	output, err := exec.RunCommand("docker-compose", commandArgs)
+	commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
+	output, err := exec.RunCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
@@ -127,8 +127,8 @@ func startLocalBeach() error {
 		_ = destination.Close()
 
 		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
-		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+		commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
+		err = exec.RunInteractiveCommand("docker", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")
 		}

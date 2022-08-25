@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"errors"
+
 	"github.com/flownative/localbeach/pkg/exec"
 	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
@@ -60,8 +61,8 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 
 	if len(nginxStatusOutput) != 0 {
 		log.Info("Restarting reverse proxy ...")
-		commandArgs = []string{"-f", path.Base + "docker-compose.yml", "restart"}
-		output, err := exec.RunCommand("docker-compose", commandArgs)
+		commandArgs = []string{"compose", "-f", path.Base + "docker-compose.yml", "restart"}
+		output, err := exec.RunCommand("docker", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return

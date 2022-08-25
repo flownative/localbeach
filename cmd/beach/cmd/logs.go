@@ -15,11 +15,12 @@
 package cmd
 
 import (
+	"strconv"
+
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strconv"
 )
 
 var follow bool
@@ -41,11 +42,11 @@ Docker containers (--containers).`,
 		}
 
 		if containers {
-			commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "logs", "--tail=" + strconv.Itoa(tail)}
+			commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "logs", "--tail=" + strconv.Itoa(tail)}
 			if follow {
 				commandArgs = append(commandArgs, "-f")
 			}
-			err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+			err = exec.RunInteractiveCommand("docker", commandArgs)
 			if err != nil {
 				log.Fatal(err)
 				return
@@ -53,9 +54,9 @@ Docker containers (--containers).`,
 		} else {
 			commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
 			if follow {
-				commandArgs = append(commandArgs, "bash", "-c", "tail -n -" + strconv.Itoa(tail) + " -f /application/Data/Logs/*.log")
+				commandArgs = append(commandArgs, "bash", "-c", "tail -n -"+strconv.Itoa(tail)+" -f /application/Data/Logs/*.log")
 			} else {
-				commandArgs = append(commandArgs, "bash", "-c", "tail -n -" + strconv.Itoa(tail) + " /application/Data/Logs/*.log")
+				commandArgs = append(commandArgs, "bash", "-c", "tail -n -"+strconv.Itoa(tail)+" /application/Data/Logs/*.log")
 			}
 
 			err = exec.RunInteractiveCommand("docker", commandArgs)

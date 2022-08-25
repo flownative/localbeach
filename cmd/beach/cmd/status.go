@@ -33,8 +33,8 @@ var statusCmd = &cobra.Command{
 			return
 		}
 
-		commandArgs := []string{"-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "ps"}
-		err = exec.RunInteractiveCommand("docker-compose", commandArgs)
+		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "ps"}
+		err = exec.RunInteractiveCommand("docker", commandArgs)
 		if err != nil {
 			log.Fatal(err)
 			return
