@@ -11,7 +11,7 @@ volumes:
 
 services:
   webserver:
-    image: ${BEACH_WEBSERVER_IMAGE:-flownative/nginx}:${BEACH_WEBSERVER_IMAGE_VERSION:-3}
+    image: ${BEACH_WEBSERVER_IMAGE:-flownative/nginx}:${BEACH_WEBSERVER_IMAGE_VERSION:-4}
     container_name: ${BEACH_PROJECT_NAME:?Please specify a Beach project name as BEACH_PROJECT_NAME}_webserver
     networks:
       - local_beach

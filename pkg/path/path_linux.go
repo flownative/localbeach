@@ -1,4 +1,4 @@
-// Copyright 2019-2021 Robert Lemke, Karsten Dambekalns, Christian Müller
+// Copyright 2019-2022 Robert Lemke, Karsten Dambekalns, Christian Müller
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 // 💡 See https://golang.org/cmd/go/#hdr-Build_constraints for explanation of build constraints
 
+//go:build linux
 // +build linux
 
 package path
@@ -26,7 +27,7 @@ import (
 var OldBase = ""
 var Base = ""
 var Certificates = ""
-var  Database = ""
+var Database = ""
 
 func init() {
 	homeDir, err := os.UserHomeDir()

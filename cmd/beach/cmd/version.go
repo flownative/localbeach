@@ -1,4 +1,4 @@
-// Copyright 2019-2021 Robert Lemke, Karsten Dambekalns, Christian Müller
+// Copyright 2019-2022 Robert Lemke, Karsten Dambekalns, Christian Müller
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -29,6 +29,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of Beach",
 	Long:  `If version numbers are important to you, this command will be your favorite: it displays a version!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Local Beach %s © 2019-2021 Robert Lemke / Flownative GmbH \n", version.Version)
+		fmt.Printf("Local Beach %s © 2019-2022 Robert Lemke / Flownative GmbH \n", version.Version)
 	},
 }

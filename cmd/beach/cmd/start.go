@@ -1,4 +1,4 @@
-// Copyright 2019-2021 Robert Lemke, Karsten Dambekalns, Christian Müller
+// Copyright 2019-2022 Robert Lemke, Karsten Dambekalns, Christian Müller
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		}
 	}
 
+	log.Info("Starting project ...")
 	commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
 	output, err := exec.RunCommand("docker", commandArgs)
 	if err != nil {
@@ -77,6 +78,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
+	log.Debug("Creating project database (if needed) ...")
 	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
 	output, err = exec.RunCommand("docker", commandArgs)
 	if err != nil {
@@ -86,7 +88,6 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 
 	log.Info("You are all set")
 	log.Info("When files have been synced, you can access this instance at http://" + sandbox.ProjectName + ".localbeach.net")
-	return
 }
 
 func startLocalBeach() error {
