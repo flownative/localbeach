@@ -17,6 +17,7 @@ package cmd
 
 import (
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -76,7 +77,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 func findInstanceRoots() ([]string, error) {
 	var configurationFiles []string
 
-	output, err := exec.RunCommand("docker", []string{"ps", "-q", "--filter", "name=_devkit"})
+	output, err := exec.RunCommand("docker", []string{"ps", "-q", "--filter", "network=local_beach"})
 	if err != nil {
 		return nil, errors.New(output)
 	}
@@ -87,9 +88,30 @@ func findInstanceRoots() ([]string, error) {
 			if err != nil {
 				return nil, errors.New(output)
 			}
-			configurationFiles = append(configurationFiles, filepath.Dir(strings.TrimSpace(output)))
+			projectDirectory := filepath.Dir(strings.TrimSpace(output))
+			if containsLocalBeachInstance(projectDirectory) {
+				configurationFiles = append(configurationFiles, projectDirectory)
+			}
 		}
 	}
 
-	return configurationFiles, nil
+	return removeDuplicates(configurationFiles), nil
+}
+
+func containsLocalBeachInstance(path string) bool {
+	path = path + "/.localbeach.docker-compose.yaml"
+	_, err := os.Stat(path)
+	return !errors.Is(err, os.ErrNotExist)
+}
+
+func removeDuplicates(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	var list []string
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }
