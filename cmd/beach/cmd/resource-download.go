@@ -54,7 +54,7 @@ Notes:
 
 func init() {
 	resourceDownloadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to download from, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
-	resourceDownloadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to download from, eg. 'project-123abc45-def6-7890-abcd-1234567890ab'")
+	resourceDownloadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to download from, eg. 'beach-project-123abc45-def6-7890-abcd-1234567890ab'")
 	_ = resourceDownloadCmd.MarkFlagRequired("instance")
 	_ = resourceDownloadCmd.MarkFlagRequired("namespace")
 	rootCmd.AddCommand(resourceDownloadCmd)
