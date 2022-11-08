@@ -57,7 +57,7 @@ Notes:
 
 func init() {
 	resourceUploadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to upload to, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
-	resourceUploadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to upload to, eg. 'project-123abc45-def6-7890-abcd-1234567890ab'")
+	resourceUploadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to upload to, eg. 'beach-project-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceUploadCmd.Flags().BoolVar(&force, "force", false, "Force uploading resources which already exist in the target bucket")
 	resourceUploadCmd.Flags().StringVar(&resumeWithFile, "resume-with-file", "", "If specified, resume uploading resources starting with the given filename, eg. '12dcde4c13142942288c5a973caf0fa720ed2794'")
 	_ = resourceUploadCmd.MarkFlagRequired("instance")
