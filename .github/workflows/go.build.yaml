@@ -80,7 +80,7 @@ jobs:
 
       - name: Calculate checksum (darwin)
         id: calculate-checksums-darwin
-        run: echo "::set-output name=darwin_sha256sum::$(sha256sum beach_darwin_amd64.zip | awk '//{print $1}')"
+        run: echo "darwin_sha256sum=$(sha256sum beach_darwin_amd64.zip | awk '//{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Upload Release Asset (linux)
         id: upload-release-asset-linux
@@ -95,7 +95,7 @@ jobs:
 
       - name: Calculate checksum (linux)
         id: calculate-checksums-linux
-        run: echo "::set-output name=linux_sha256sum::$(sha256sum beach_linux_amd64.zip | awk '//{print $1}')"
+        run: echo "linux_sha256sum=$(sha256sum beach_linux_amd64.zip | awk '//{print $1}')" >> $GITHUB_OUTPUT
 
   homebrew:
     name: Homebrew release
