@@ -98,7 +98,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 			log.Error(err)
 		} else {
 			source := bucket.Object(attributes.Name)
-			targetPath := filepath.Dir(sandbox.ProjectDataPersistentResourcesPath + "/" + getRelativePersistentResourcePathByHash(attributes.Name) + attributes.Name)
+			targetPath := filepath.Dir(sandbox.ProjectDataPersistentResourcesPath + "/" + getRelativePersistentResourcePathByHash(attributes.Name) + "/")
 
 			err = os.MkdirAll(targetPath, 0755)
 			if err != nil {
@@ -106,7 +106,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 				return
 			}
 
-			file, err := os.OpenFile(targetPath+"/"+filepath.Base(attributes.Name), os.O_RDWR|os.O_CREATE, 0644)
+			file, err := os.OpenFile(targetPath+"/"+filepath.Dir(attributes.Name), os.O_RDWR|os.O_CREATE, 0644)
 			if err != nil {
 				log.Fatal(err)
 				return
