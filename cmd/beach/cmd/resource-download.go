@@ -68,7 +68,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 	}
 	_, err = os.Stat(sandbox.ProjectDataPersistentResourcesPath)
 	if err != nil {
-		log.Fatal("The path %v does not exist", sandbox.ProjectDataPersistentResourcesPath)
+		log.Fatal(fmt.Sprintf("The path %v does not exist", sandbox.ProjectDataPersistentResourcesPath))
 		return
 	}
 
