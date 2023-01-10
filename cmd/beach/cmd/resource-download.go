@@ -106,7 +106,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 				return
 			}
 
-			file, err := os.OpenFile(targetPath+"/"+filepath.Dir(attributes.Name), os.O_RDWR|os.O_CREATE, 0644)
+			file, err := os.OpenFile(targetPath+"/"+filepath.Base(attributes.Name), os.O_RDWR|os.O_CREATE, 0644)
 			if err != nil {
 				log.Fatal(err)
 				return
