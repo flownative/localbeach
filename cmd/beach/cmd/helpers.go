@@ -79,7 +79,7 @@ func retrieveCloudStorageCredentials(instanceIdentifier string, projectNamespace
 		s := strings.SplitN(line, "=", 2)
 		if len(s) == 2 {
 			switch s[0] {
-			case "BEACH_GOOGLE_CLOUD_STORAGE_TARGET_BUCKET", "BEACH_GOOGLE_CLOUD_STORAGE_PUBLIC_BUCKET":
+			case "BEACH_GOOGLE_CLOUD_STORAGE_STORAGE_BUCKET", "BEACH_GOOGLE_CLOUD_STORAGE_PUBLIC_BUCKET":
 				bucketName = s[1]
 			case "BEACH_GOOGLE_CLOUD_STORAGE_SERVICE_ACCOUNT_PRIVATE_KEY":
 				encodedPrivateKey = s[1]
