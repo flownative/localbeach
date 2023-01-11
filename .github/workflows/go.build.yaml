@@ -15,14 +15,14 @@ jobs:
       linux_sha256sum: ${{ steps.calculate-checksums-linux.outputs.linux_sha256sum }}
     steps:
 
-      - name: Set up Go 1.17
-        uses: actions/setup-go@v1
+      - name: Set up Go 1.19
+        uses: actions/setup-go@v3
         with:
-          go-version: 1.17
+          go-version: 1.19
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Get dependencies
         run: |
@@ -43,13 +43,13 @@ jobs:
           done
 
       - name: Archive build result (darwin)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: beach-osx
           path: beach_darwin_amd64.zip
 
       - name: Archive build result (linux)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: beach-linux
           path: beach_linux_amd64.zip
@@ -62,10 +62,6 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
-
-          # FIXME:
-          draft: false
-          prerelease: false
 
       - name: Upload Release Asset (darwin)
         id: upload-release-asset-macos
@@ -104,10 +100,10 @@ jobs:
     steps:
 
       - name: Check out Go code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Check out Homebrew code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: flownative/homebrew-flownative
           path: homebrew
@@ -120,7 +116,7 @@ jobs:
 
       # see: https://github.com/bluwy/substitute-string-action
       - name: Substitute Homebrew variables
-        uses: bluwy/substitute-string-action@v1
+        uses: bluwy/substitute-string-action@v2
         with:
           _input-file: homebrew/Formula/localbeach.rb
           _output-file: homebrew/Formula/localbeach.rb
