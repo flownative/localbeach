@@ -29,7 +29,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-var instanceIdentifier, projectNamespace, bucketName, resumeWithFile string
+var instanceIdentifier, projectNamespace, bucketName, resourcesPath, resumeWithFile string
 var force bool
 
 // resourceUploadCmd represents the resource-upload command
@@ -63,7 +63,6 @@ func init() {
 	resourceUploadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to upload to, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceUploadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to upload to, eg. 'beach-project-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceUploadCmd.Flags().BoolVar(&force, "force", false, "Force uploading resources which already exist in the target bucket")
-	resourceUploadCmd.Flags().StringVar(&bucketName, "bucket", "", "name of the bucket to upload resources to")
 	resourceUploadCmd.Flags().StringVar(&resumeWithFile, "resume-with-file", "", "If specified, resume uploading resources starting with the given filename, eg. '12dcde4c13142942288c5a973caf0fa720ed2794'")
 	_ = resourceUploadCmd.MarkFlagRequired("instance")
 	_ = resourceUploadCmd.MarkFlagRequired("namespace")
@@ -76,9 +75,12 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		log.Fatal("Could not activate sandbox: ", err)
 		return
 	}
-	_, err = os.Stat(sandbox.ProjectDataPersistentResourcesPath)
+	if resourcesPath == "" {
+		resourcesPath = sandbox.ProjectDataPersistentResourcesPath
+	}
+	_, err = os.Stat(resourcesPath)
 	if err != nil {
-		log.Fatal("The path %v does not exist", sandbox.ProjectDataPersistentResourcesPath)
+		log.Fatal("The path %v does not exist", resourcesPath)
 		return
 	}
 
@@ -99,10 +101,10 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	log.Info(fmt.Sprintf("Uploading resources from local directory %v to bucket %v...", sandbox.ProjectDataPersistentResourcesPath, bucketName))
+	log.Info(fmt.Sprintf("Uploading resources from local directory %v to bucket %v...", resourcesPath, bucketName))
 
 	var fileList []string
-	err = filepath.Walk(sandbox.ProjectDataPersistentResourcesPath, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(resourcesPath, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() {
 			fileList = append(fileList, path)
 		}
