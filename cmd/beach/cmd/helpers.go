@@ -60,7 +60,7 @@ func readFileFromAssets(src string) string {
 func getRelativePersistentResourcePathByHash(hash string) string {
 	slashPosition := strings.Index(hash, "/")
 	if slashPosition > 0 {
-		return string(hash[0:slashPosition]) + "/" + string(hash[slashPosition+1]) + "/" + string(hash[slashPosition+2]) + "/" + string(hash[slashPosition+3])
+		return string(hash[0:slashPosition]) + "/" + string(hash[slashPosition+1]) + "/" + string(hash[slashPosition+2]) + "/" + string(hash[slashPosition+3]) + "/" + string(hash[slashPosition+4])
 	} else {
 		return string(hash[0]) + "/" + string(hash[1]) + "/" + string(hash[2]) + "/" + string(hash[3])
 	}
