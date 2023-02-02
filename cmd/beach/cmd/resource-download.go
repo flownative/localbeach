@@ -41,6 +41,10 @@ Resource data (that is, the actual files containing binary data, like images or 
 will be downloaded to the Data/Persistent/Resources directory. It is your responsibility 
 to make sure that the database content is matching this data. 
 
+The Google Cloud Storage bucket name will be determined automatically through the environment
+variables set in the given instance. You can override the bucket name by specifying the --bucket
+parameter.
+
 Be aware that Neos and Flow keep track of existing resources by a database table. If 
 resources are not registered in there, Flow does not know about them.
 
@@ -55,6 +59,8 @@ Notes:
 func init() {
 	resourceDownloadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to download from, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceDownloadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to download from, eg. 'beach-project-123abc45-def6-7890-abcd-1234567890ab'")
+	resourceDownloadCmd.Flags().StringVar(&bucketName, "bucket", "", "name of the bucket to download resources from")
+	resourceDownloadCmd.Flags().StringVar(&resourcesPath, "resources-path", "", "custom path where to store the downloaded resources, e.g. 'Data/Persistent/Protected'")
 	_ = resourceDownloadCmd.MarkFlagRequired("instance")
 	_ = resourceDownloadCmd.MarkFlagRequired("namespace")
 	rootCmd.AddCommand(resourceDownloadCmd)
@@ -66,16 +72,25 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 		log.Fatal("Could not activate sandbox: ", err)
 		return
 	}
-	_, err = os.Stat(sandbox.ProjectDataPersistentResourcesPath)
+
+	if resourcesPath == "" {
+		resourcesPath = sandbox.ProjectDataPersistentResourcesPath
+	}
+
+	_, err = os.Stat(resourcesPath)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("The path %v does not exist", sandbox.ProjectDataPersistentResourcesPath))
+		log.Fatal(fmt.Sprintf("The path %v does not exist", resourcesPath))
 		return
 	}
 
-	err, bucketName, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
+	err, bucketNameFromCredentials, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
 	if err != nil {
 		log.Fatal(err)
 		return
+	}
+
+	if bucketName == "" {
+		bucketName = bucketNameFromCredentials
 	}
 
 	ctx := context.Background()
@@ -85,7 +100,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	log.Info(fmt.Sprintf("Downloading resources from bucket %v to local directory %v ...", bucketName, sandbox.ProjectDataPersistentResourcesPath))
+	log.Info(fmt.Sprintf("Downloading resources from bucket %v to local directory %v ...", bucketName, resourcesPath))
 
 	bucket := client.Bucket(bucketName)
 	it := bucket.Objects(ctx, nil)
@@ -98,7 +113,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 			log.Error(err)
 		} else {
 			source := bucket.Object(attributes.Name)
-			targetPath := filepath.Dir(sandbox.ProjectDataPersistentResourcesPath + "/" + getRelativePersistentResourcePathByHash(attributes.Name) + "/")
+			targetPath := filepath.Dir(resourcesPath + "/" + getRelativePersistentResourcePathByHash(attributes.Name) + "/")
 
 			err = os.MkdirAll(targetPath, 0755)
 			if err != nil {

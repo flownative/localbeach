@@ -29,7 +29,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-var instanceIdentifier, projectNamespace, resumeWithFile string
+var instanceIdentifier, projectNamespace, bucketName, resourcesPath, resumeWithFile string
 var force bool
 
 // resourceUploadCmd represents the resource-upload command
@@ -43,6 +43,10 @@ This command uploads Flow resources from a local Flow or Neos project to a Beach
 Resource data (that is, the actual files containing binary data, like images or documents)
 will be uploaded from the Data/Persistent/Resources directory. It is your responsibility 
 to make sure that the database content is matching this data. 
+
+The Google Cloud Storage bucket name will be determined automatically through the environment
+variables set in the given instance. You can override the bucket name by specifying the --bucket
+parameter.
 
 Be aware that Neos and Flow keep track of existing resources by a database table. If 
 resources are not registered in there, Flow does not know about them.
@@ -71,16 +75,23 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		log.Fatal("Could not activate sandbox: ", err)
 		return
 	}
-	_, err = os.Stat(sandbox.ProjectDataPersistentResourcesPath)
+	if resourcesPath == "" {
+		resourcesPath = sandbox.ProjectDataPersistentResourcesPath
+	}
+	_, err = os.Stat(resourcesPath)
 	if err != nil {
-		log.Fatal("The path %v does not exist", sandbox.ProjectDataPersistentResourcesPath)
+		log.Fatal("The path %v does not exist", resourcesPath)
 		return
 	}
 
-	err, bucketName, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
+	err, bucketNameFromCredentials, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
 	if err != nil {
 		log.Fatal(err)
 		return
+	}
+
+	if bucketName == "" {
+		bucketName = bucketNameFromCredentials
 	}
 
 	ctx := context.Background()
@@ -90,10 +101,10 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	log.Info(fmt.Sprintf("Uploading resources from local directory %v to bucket %v...", sandbox.ProjectDataPersistentResourcesPath, bucketName))
+	log.Info(fmt.Sprintf("Uploading resources from local directory %v to bucket %v...", resourcesPath, bucketName))
 
 	var fileList []string
-	err = filepath.Walk(sandbox.ProjectDataPersistentResourcesPath, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(resourcesPath, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() {
 			fileList = append(fileList, path)
 		}
