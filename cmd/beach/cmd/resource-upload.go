@@ -29,7 +29,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-var instanceIdentifier, projectNamespace, resumeWithFile string
+var instanceIdentifier, projectNamespace, bucketName, resumeWithFile string
 var force bool
 
 // resourceUploadCmd represents the resource-upload command
@@ -43,6 +43,10 @@ This command uploads Flow resources from a local Flow or Neos project to a Beach
 Resource data (that is, the actual files containing binary data, like images or documents)
 will be uploaded from the Data/Persistent/Resources directory. It is your responsibility 
 to make sure that the database content is matching this data. 
+
+The Google Cloud Storage bucket name will be determined automatically through the environment
+variables set in the given instance. You can override the bucket name by specifying the --bucket
+parameter.
 
 Be aware that Neos and Flow keep track of existing resources by a database table. If 
 resources are not registered in there, Flow does not know about them.
@@ -59,6 +63,7 @@ func init() {
 	resourceUploadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to upload to, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceUploadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to upload to, eg. 'beach-project-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceUploadCmd.Flags().BoolVar(&force, "force", false, "Force uploading resources which already exist in the target bucket")
+	resourceUploadCmd.Flags().StringVar(&bucketName, "bucket", "", "name of the bucket to upload resources to")
 	resourceUploadCmd.Flags().StringVar(&resumeWithFile, "resume-with-file", "", "If specified, resume uploading resources starting with the given filename, eg. '12dcde4c13142942288c5a973caf0fa720ed2794'")
 	_ = resourceUploadCmd.MarkFlagRequired("instance")
 	_ = resourceUploadCmd.MarkFlagRequired("namespace")
@@ -77,10 +82,14 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	err, bucketName, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
+	err, bucketNameFromCredentials, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
 	if err != nil {
 		log.Fatal(err)
 		return
+	}
+
+	if bucketName == "" {
+		bucketName = bucketNameFromCredentials
 	}
 
 	ctx := context.Background()
