@@ -23,6 +23,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var host string
+
 // setupHttpsCmd represents the setup-https command
 var setupHttpsCmd = &cobra.Command{
 	Use:   "setup-https",
@@ -33,6 +35,7 @@ var setupHttpsCmd = &cobra.Command{
 }
 
 func init() {
+    setupHttpsCmd.Flags().StringVar(&host, "host", "*.localbeach.net", "Host to use for the certificate.")
 	rootCmd.AddCommand(setupHttpsCmd)
 }
 
@@ -47,7 +50,7 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs = []string{"-cert-file", path.Certificates + "default.crt", "-key-file", path.Certificates + "default.key", "*.localbeach.net"}
+	commandArgs = []string{"-cert-file", path.Certificates + "default.crt", "-key-file", path.Certificates + "default.key", host}
 	err = exec.RunInteractiveCommand("mkcert", commandArgs)
 	if err != nil {
 		log.Error(err)
