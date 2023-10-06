@@ -4,11 +4,6 @@ networks:
   local_beach:
     external: true
 
-volumes:
-  application:
-    name: ${BEACH_PROJECT_NAME:?Please specify a Beach project name as BEACH_PROJECT_NAME}-application
-    driver: local
-
 services:
   webserver:
     image: ${BEACH_WEBSERVER_IMAGE:-flownative/nginx}:${BEACH_WEBSERVER_IMAGE_VERSION:-4}
