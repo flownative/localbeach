@@ -4,7 +4,7 @@ on:
     branches-ignore:
       - '**'
     tags:
-      - 'v1.*.*'
+      - 'v*.*.*'
 jobs:
 
   build:
@@ -15,14 +15,14 @@ jobs:
       linux_sha256sum: ${{ steps.calculate-checksums-linux.outputs.linux_sha256sum }}
     steps:
 
-      - name: Set up Go 1.19
-        uses: actions/setup-go@v3
+      - name: Set up Go 1.20
+        uses: actions/setup-go@v4
         with:
-          go-version: 1.19
+          go-version: 1.20
         id: go
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Get dependencies
         run: |
@@ -55,39 +55,21 @@ jobs:
           path: beach_linux_amd64.zip
 
       - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-
-      - name: Upload Release Asset (darwin)
-        id: upload-release-asset-macos
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: beach_linux_amd64.zip
-          asset_name: beach_linux_amd64.zip
-          asset_content_type: application/zip
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: "beach_linux_amd64.zip,beach_darwin_amd64.zip"
+          artifactContentType: application/zip
+          generateReleaseNotes: true
+          makeLatest: true
+          name: Release ${{ github.ref }}
 
       - name: Calculate checksum (darwin)
         id: calculate-checksums-darwin
         run: echo "darwin_sha256sum=$(sha256sum beach_darwin_amd64.zip | awk '//{print $1}')" >> $GITHUB_OUTPUT
-
-      - name: Upload Release Asset (linux)
-        id: upload-release-asset-linux
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: beach_darwin_amd64.zip
-          asset_name: beach_darwin_amd64.zip
-          asset_content_type: application/zip
 
       - name: Calculate checksum (linux)
         id: calculate-checksums-linux
@@ -100,10 +82,10 @@ jobs:
     steps:
 
       - name: Check out Go code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check out Homebrew code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: flownative/homebrew-flownative
           path: homebrew
@@ -135,7 +117,7 @@ jobs:
           git commit -m 'localbeach: update to ${{ github.ref }}'
 
       - name: Push to git
-        uses: ad-m/github-push-action@v0.6.0
+        uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.FLOWNATIVE_BOT_TOKEN }}
           repository: flownative/homebrew-flownative
