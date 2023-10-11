@@ -117,7 +117,7 @@ jobs:
           git commit -m 'localbeach: update to ${{ github.ref }}'
 
       - name: Push to git
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@v0.8.0
         with:
           github_token: ${{ secrets.FLOWNATIVE_BOT_TOKEN }}
           repository: flownative/homebrew-flownative
