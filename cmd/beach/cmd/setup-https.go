@@ -21,6 +21,7 @@ import (
 	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"strings"
 )
 
 var host string
@@ -35,7 +36,7 @@ var setupHttpsCmd = &cobra.Command{
 }
 
 func init() {
-    setupHttpsCmd.Flags().StringVar(&host, "host", "*.localbeach.net", "Host to use for the certificate.")
+	setupHttpsCmd.Flags().StringVar(&host, "host", "*.localbeach.net", "Host to use for the certificate. Multiple can be given comma-separated.")
 	rootCmd.AddCommand(setupHttpsCmd)
 }
 
@@ -50,7 +51,10 @@ func handleSetupHttpsRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs = []string{"-cert-file", path.Certificates + "default.crt", "-key-file", path.Certificates + "default.key", host}
+	commandArgs = []string{"-cert-file", path.Certificates + "default.crt", "-key-file", path.Certificates + "default.key"}
+	for _, hostname := range strings.Split(host, ",") {
+		commandArgs = append(commandArgs, strings.Trim(hostname, " "))
+	}
 	err = exec.RunInteractiveCommand("mkcert", commandArgs)
 	if err != nil {
 		log.Error(err)
