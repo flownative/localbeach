@@ -15,14 +15,14 @@ jobs:
       linux_sha256sum: ${{ steps.calculate-checksums-linux.outputs.linux_sha256sum }}
     steps:
 
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
       - name: Set up Go 1.22
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: '1.22'
         id: go
-
-      - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
 
       - name: Get dependencies
         run: |
@@ -43,13 +43,13 @@ jobs:
           done
 
       - name: Archive build result (darwin)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: beach-osx
           path: beach_darwin_amd64.zip
 
       - name: Archive build result (linux)
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: beach-linux
           path: beach_linux_amd64.zip
@@ -98,14 +98,15 @@ jobs:
 
       # see: https://github.com/bluwy/substitute-string-action
       - name: Substitute Homebrew variables
-        uses: bluwy/substitute-string-action@v2
+        uses: bluwy/substitute-string-action@v3
         with:
           _input-file: homebrew/Formula/localbeach.rb
           _output-file: homebrew/Formula/localbeach.rb
           _format-key: "{{key}}"
-          version: ${{ env.RELEASE_VERSION }}
-          darwin_sha256sum: ${{ needs.build.outputs.darwin_sha256sum }}
-          linux_sha256sum: ${{ needs.build.outputs.linux_sha256sum }}
+        env:
+          INPUT_VERSION: ${{ env.RELEASE_VERSION }}
+          INPUT_DARWIN_SHA256SUM: ${{ needs.build.outputs.darwin_sha256sum }}
+          INPUT_LINUX_SHA256SUM: ${{ needs.build.outputs.linux_sha256sum }}
 
       - name: Commit update
         run: |
