@@ -63,7 +63,7 @@ jobs:
           artifactErrorsFailBuild: true
           artifacts: "beach_linux_amd64.zip,beach_darwin_amd64.zip"
           artifactContentType: application/zip
-          generateReleaseNotes: true
+          generateReleaseNotes: false
           makeLatest: true
           name: Release ${{ github.ref }}
 
