@@ -29,6 +29,6 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of Beach",
 	Long:  `If version numbers are important to you, this command will be your favorite: it displays a version!`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("Local Beach %s © 2019-2023 Robert Lemke / Flownative GmbH \n", version.Version)
+		fmt.Printf("Local Beach %s © 2019-2024 Robert Lemke / Flownative GmbH \n", version.Version)
 	},
 }
