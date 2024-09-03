@@ -19,7 +19,7 @@ services:
     environment:
       - DEFAULT_HOST=hello.localbeach.net
   database:
-    image: mariadb:10.5
+    image: mariadb:10.11
     container_name: local_beach_database
     networks:
       - local_beach
