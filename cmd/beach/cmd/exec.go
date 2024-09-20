@@ -46,7 +46,7 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 
 	commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
 	if len(args) > 0 {
-		commandArgs = append(commandArgs, "bash", "-c", strings.Trim(fmt.Sprint(args), "[]"))
+		commandArgs = append(commandArgs, "bash", "-l", "-c", strings.Trim(fmt.Sprint(args), "[]"))
 	} else {
 		commandArgs = append(commandArgs, "bash")
 	}
