@@ -39,7 +39,6 @@ services:
     volumes:
       - ./:/application
     environment:
-      - BEACH_WAIT_FOR_SYNC=false
       - BEACH_INSTANCE_NAME=${BEACH_PROJECT_NAME}
       - BEACH_FLOW_BASE_CONTEXT=${BEACH_FLOW_BASE_CONTEXT:-Development}
       - BEACH_FLOW_SUB_CONTEXT=${BEACH_FLOW_SUB_CONTEXT:-Instance}
