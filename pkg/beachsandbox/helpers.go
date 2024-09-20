@@ -40,7 +40,7 @@ func detectProjectRootPathFromWorkingDir() (rootPath string, err error) {
 func detectProjectRootPath(currentPath string) (projectRootPath string, err error) {
 	projectRootPath = path.Clean(currentPath)
 
-	if _, err := os.Stat(projectRootPath + "/flow"); err == nil {
+	if info, err := os.Stat(projectRootPath + "/flow"); err == nil && !info.IsDir() {
 		if _, err := os.Stat(projectRootPath + "/.localbeach.docker-compose.yaml"); err == nil {
 			return projectRootPath, err
 		}
