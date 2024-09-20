@@ -53,7 +53,7 @@ func detectProjectRootPath(currentPath string) (projectRootPath string, err erro
 }
 
 func loadLocalBeachEnvironment(projectRootPath string) (err error) {
-	envFilenames := []string{".env", ".localbeach.env", ".localbeach.dist.env"}
+	envFilenames := []string{".localbeach.dist.env", ".localbeach.env", ".env"}
 	envPathAndFilename := ""
 
 	for _, envFilename := range envFilenames {
