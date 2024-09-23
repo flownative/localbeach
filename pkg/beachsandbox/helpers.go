@@ -18,6 +18,7 @@ import (
 	"errors"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -39,8 +40,8 @@ func detectProjectRootPathFromWorkingDir() (rootPath string, err error) {
 func detectProjectRootPath(currentPath string) (projectRootPath string, err error) {
 	projectRootPath = path.Clean(currentPath)
 
-	if info, err := os.Stat(projectRootPath + "/flow"); err == nil && !info.IsDir() {
-		if _, err := os.Stat(projectRootPath + "/.localbeach.docker-compose.yaml"); err == nil {
+	if info, err := os.Stat(filepath.Join(projectRootPath, "flow")); err == nil && !info.IsDir() {
+		if _, err := os.Stat(filepath.Join(projectRootPath, ".localbeach.docker-compose.yaml")); err == nil {
 			return projectRootPath, err
 		}
 		return projectRootPath, ErrNoLocalBeachConfigurationFound
@@ -56,7 +57,7 @@ func loadLocalBeachEnvironment(projectRootPath string) (err error) {
 	envPathAndFilename := ""
 
 	for _, envFilename := range envFilenames {
-		envPathAndFilename = projectRootPath + "/" + envFilename
+		envPathAndFilename = filepath.Join(projectRootPath, envFilename)
 
 		if _, err := os.Stat(envPathAndFilename); err == nil {
 

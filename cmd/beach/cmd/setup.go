@@ -62,7 +62,7 @@ func setupLocalBeach() error {
 		}
 
 		log.Info("moving certificates")
-		err = os.Rename(path.OldBase+"Nginx/Certificates", path.Certificates)
+		err = os.Rename(filepath.Join(path.OldBase, "Nginx", "Certificates"), path.Certificates)
 		if err != nil {
 			if os.IsNotExist(err) {
 				log.Error(err)
@@ -73,7 +73,7 @@ func setupLocalBeach() error {
 		}
 
 		log.Info("moving database data")
-		err = os.Rename(path.OldBase+"MariaDB", path.Database)
+		err = os.Rename(filepath.Join(path.OldBase, "MariaDB"), path.Database)
 		if err != nil {
 			if os.IsNotExist(err) {
 				log.Error(err)
@@ -83,12 +83,12 @@ func setupLocalBeach() error {
 			}
 		}
 
-		err = os.RemoveAll(path.OldBase + "Nginx")
+		err = os.RemoveAll(filepath.Join(path.OldBase, "Nginx"))
 		if err != nil {
 			log.Error(err)
 		}
 
-		err = os.Remove(path.OldBase + "docker-compose.yml")
+		err = os.Remove(filepath.Join(path.OldBase, "docker-compose.yml"))
 		if err != nil {
 			log.Error(err)
 		}
