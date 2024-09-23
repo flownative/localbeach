@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"path/filepath"
 	"strconv"
 
 	"github.com/flownative/localbeach/pkg/beachsandbox"
@@ -52,11 +53,11 @@ Docker containers (--containers).`,
 				return
 			}
 		} else {
-			commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
+			commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php", "bash", "-c"}
 			if follow {
-				commandArgs = append(commandArgs, "bash", "-c", "tail -n -"+strconv.Itoa(tail)+" -f /application/Data/Logs/*.log")
+				commandArgs = append(commandArgs, "tail -n -"+strconv.Itoa(tail)+" -f "+filepath.Join("/application", sandbox.FlowRootPath, "Data/Logs/*.log"))
 			} else {
-				commandArgs = append(commandArgs, "bash", "-c", "tail -n -"+strconv.Itoa(tail)+" /application/Data/Logs/*.log")
+				commandArgs = append(commandArgs, "tail -n -"+strconv.Itoa(tail)+" "+filepath.Join("/application", sandbox.FlowRootPath, "Data/Logs/*.log"))
 			}
 
 			err = exec.RunInteractiveCommand("docker", commandArgs)

@@ -25,11 +25,11 @@ type BeachSandbox struct {
 	ProjectRootPath                    string ``
 	ProjectDataPersistentResourcesPath string ``
 	DockerComposeFilePath              string ``
+	FlowRootPath                       string ``
 }
 
 func (sandbox *BeachSandbox) Init(rootPath string) error {
 	sandbox.ProjectRootPath = rootPath
-	sandbox.ProjectDataPersistentResourcesPath = rootPath + "/Data/Persistent/Resources"
 
 	if err := loadLocalBeachEnvironment(rootPath); err != nil {
 		return err
@@ -37,6 +37,8 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 
 	sandbox.DockerComposeFilePath = filepath.Join(sandbox.ProjectRootPath, ".localbeach.docker-compose.yaml")
 	sandbox.ProjectName = os.Getenv("BEACH_PROJECT_NAME")
+	sandbox.FlowRootPath = os.Getenv("BEACH_FLOW_ROOTPATH")
+	sandbox.ProjectDataPersistentResourcesPath = filepath.Join(rootPath, sandbox.FlowRootPath, "/Data/Persistent/Resources")
 
 	return nil
 }
