@@ -11,15 +11,3 @@ Neos:
         user: '%env:BEACH_DATABASE_USERNAME%'
         password: '%env:BEACH_DATABASE_PASSWORD%'
         port: '%env:BEACH_DATABASE_PORT%'
-
-# This should be included if using Flow earlier than 6.0.0
-# which means Neos before 5.0.0
-#    resource:
-#      targets:
-#        localWebDirectoryStaticResourcesTarget:
-#          targetOptions:
-#            relativeSymlinks: true
-#
-#        localWebDirectoryPersistentResourcesTarget:
-#          targetOptions:
-#            relativeSymlinks: true
