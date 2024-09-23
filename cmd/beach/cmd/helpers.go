@@ -152,7 +152,7 @@ func startLocalBeach() error {
 
 	databaseStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_database", "--filter", "status=running", "-q"})
 	if err != nil {
-		return errors.New("failed checking status of container local_beach_database container")
+		return errors.New("failed checking status of container local_beach_database container, maybe the Docker daemon is not running")
 	}
 
 	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
@@ -187,6 +187,12 @@ func startLocalBeach() error {
 				return errors.New("failed to check for database server container health")
 			}
 			if strings.TrimSpace(output) == "healthy" {
+				commandArgs := []string{"exec", "local_beach_database", "mariadb-upgrade", "-u", "root", "--password=password"}
+				output, err = exec.RunCommand("docker", commandArgs)
+				if err != nil {
+					log.Error(output)
+					return errors.New("mariadb-upgrade failed")
+				}
 				break
 			}
 			if tries == 10 {

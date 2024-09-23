@@ -17,19 +17,21 @@ services:
     environment:
       - DEFAULT_HOST=hello.localbeach.net
   database:
-    image: mariadb:10.11
+    image: mariadb:11.4
     container_name: local_beach_database
     networks:
       - local_beach
     volumes:
       - {{databasePath}}:/var/lib/mysql
     healthcheck:
-      test: "/usr/bin/mysql --user=root --password=password --execute \"SHOW DATABASES;\""
+      test: "/usr/bin/mariadb --user=root --password=password --execute \"SHOW DATABASES;\""
       interval: 3s
       timeout: 1s
       retries: 10
     environment:
       - MYSQL_ROOT_PASSWORD=password
     ports:
-      - 3307:3306
-    command: 'mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci'
+       - "3307:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci

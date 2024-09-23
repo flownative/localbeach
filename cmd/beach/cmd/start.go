@@ -71,7 +71,7 @@ func handleStartRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Debug("Creating project database (if needed) ...")
-	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mysql -u root --password=password"}
+	commandArgs = []string{"exec", "local_beach_database", "/bin/bash", "-c", "echo 'CREATE DATABASE IF NOT EXISTS `" + sandbox.ProjectName + "`' | mariadb -u root --password=password"}
 	output, err = exec.RunCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(output)
