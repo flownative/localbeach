@@ -20,7 +20,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/flownative/localbeach/pkg/beachsandbox"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -42,16 +41,17 @@ func init() {
 }
 
 func handleInitRun(cmd *cobra.Command, args []string) {
-	sandbox, err := beachsandbox.GetRawSandbox()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
+	var err error
 
 	projectNameFilter := regexp.MustCompile(`[^a-zA-Z0-9-]`)
 	projectName := strings.Trim(projectName, " ")
 	if len(projectName) == 0 {
-		projectName = path.Base(sandbox.ProjectRootPath)
+		workingDirPath, err := os.Getwd()
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+		projectName = path.Base(workingDirPath)
 	}
 
 	projectName = projectNameFilter.ReplaceAllLiteralString(projectName, "")
