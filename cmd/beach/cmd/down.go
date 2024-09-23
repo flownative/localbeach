@@ -54,8 +54,8 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 			log.Fatal(err)
 			return
 		}
-		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "rm", "--force", "--stop", "-v"}
-		output, err := exec.RunCommand("docker", commandArgs)
+		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "down", "-v"}
+		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
@@ -63,8 +63,8 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	}
 
 	log.Info("Stopping reverse proxy and database server ...")
-	commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
-	output, err := exec.RunCommand("docker", commandArgs)
+	commandArgs := []string{"compose", "-f", path.Base + "compose.yaml", "down", "-v", "-p", "LocalBeach"}
+	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
@@ -75,15 +75,24 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 
 func findInstanceRoots() ([]string, error) {
 	var configurationFiles []string
+	var containerData []string
+	var containerID string
+	var containerName string
 
-	output, err := exec.RunCommand("docker", []string{"ps", "-q", "--filter", "network=local_beach"})
+	output, err := exec.RunCommand("nerdctl", []string{"ps", "--format", "{{.ID}} {{.Names}}"})
 	if err != nil {
 		return nil, errors.New(output)
 	}
 	for _, line := range strings.Split(output, "\n") {
-		containerID := strings.TrimSpace(line)
-		if len(containerID) > 0 {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
+		containerData = strings.Split(line, " ")
+		containerID = strings.TrimSpace(containerData[0])
+		containerName = ""
+		if len(containerData) > 1 {
+			containerName = strings.TrimSpace(containerData[1])
+		}
+
+		if len(containerID) > 0 && strings.Contains(containerName, "_devkit") {
+			output, err := exec.RunCommand("nerdctl", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
 			if err != nil {
 				return nil, errors.New(output)
 			}

@@ -56,13 +56,13 @@ func handleRestartRun(cmd *cobra.Command, args []string) {
 	commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml"}
 	if restartRemove {
 		log.Debug("Stopping and removing containers ...")
-		commandArgs = append(commandArgs, "down", "--remove-orphans", "--volumes")
+		commandArgs = append(commandArgs, "down", "--volumes")
 	} else {
 		log.Debug("Stopping containers ...")
 		commandArgs = append(commandArgs, "stop")
 	}
 
-	err = exec.RunInteractiveCommand("docker", commandArgs)
+	err = exec.RunInteractiveCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -71,7 +71,7 @@ func handleRestartRun(cmd *cobra.Command, args []string) {
 	if restartPull {
 		log.Debug("Pulling images ...")
 		commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "pull"}
-		output, err := exec.RunCommand("docker", commandArgs)
+		output, err := exec.RunCommand("nerdctl", commandArgs)
 		if err != nil {
 			log.Fatal(output)
 			return
@@ -81,7 +81,7 @@ func handleRestartRun(cmd *cobra.Command, args []string) {
 	log.Debug("Starting containers ...")
 
 	commandArgs = []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "up", "--remove-orphans", "-d"}
-	output, err := exec.RunCommand("docker", commandArgs)
+	output, err := exec.RunCommand("nerdctl", commandArgs)
 	if err != nil {
 		log.Fatal(output)
 		return
