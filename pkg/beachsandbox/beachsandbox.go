@@ -40,7 +40,11 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 	sandbox.FlowRootPath = os.Getenv("BEACH_FLOW_ROOTPATH")
 	sandbox.ProjectDataPersistentResourcesPath = filepath.Join(rootPath, sandbox.FlowRootPath, "/Data/Persistent/Resources")
 
-	return nil
+	if info, err := os.Stat(filepath.Join(sandbox.ProjectRootPath, sandbox.FlowRootPath, "flow")); err == nil && !info.IsDir() {
+		return nil
+	}
+
+	return ErrNoFlowFound
 }
 
 // GetActiveSandbox returns the active sandbox based on the current working dir

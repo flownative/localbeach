@@ -17,6 +17,7 @@ package cmd
 import (
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -25,6 +26,7 @@ import (
 )
 
 var projectName string
+var flowRootPath string
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
@@ -37,6 +39,7 @@ var initCmd = &cobra.Command{
 
 func init() {
 	initCmd.Flags().StringVar(&projectName, "project-name", "", "Defines the project name, defaults to folder name.")
+	initCmd.Flags().StringVar(&flowRootPath, "flow-path", "", "Defines the Flow project root, defaults to current folder.")
 	rootCmd.AddCommand(initCmd)
 }
 
@@ -80,6 +83,8 @@ func handleInitRun(cmd *cobra.Command, args []string) {
 	environmentContent := readFileFromAssets("project/.localbeach.dist.env")
 	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_PROJECT_NAME}", projectName)
 	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_PROJECT_NAME_LOWERCASE}", strings.ToLower(projectName))
+	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_FLOW_ROOTPATH}", flowRootPath)
+	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_APPLICATION_PATH}", filepath.Join("/application", flowRootPath))
 
 	destination, err := os.Create(".localbeach.dist.env")
 	if err != nil {
