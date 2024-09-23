@@ -17,6 +17,7 @@ package cmd
 import (
 	"cloud.google.com/go/storage"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	log "github.com/sirupsen/logrus"
@@ -105,7 +106,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 	it := bucket.Objects(ctx, nil)
 	for {
 		attributes, err := it.Next()
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			break
 		}
 		if err != nil {

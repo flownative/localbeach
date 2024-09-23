@@ -15,6 +15,7 @@
 package beachsandbox
 
 import (
+	"errors"
 	"os"
 )
 
@@ -50,7 +51,7 @@ func GetActiveSandbox() (*BeachSandbox, error) {
 // GetRawSandbox returns the (unconfigured) sandbox based on the current working dir
 func GetRawSandbox() (*BeachSandbox, error) {
 	rootPath, err := detectProjectRootPathFromWorkingDir()
-	if err == ErrNoFlowFound {
+	if errors.Is(err, ErrNoFlowFound) {
 		return nil, err
 	}
 

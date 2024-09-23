@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/flownative/localbeach/pkg/path"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -37,14 +38,18 @@ func copyFileFromAssets(src, dst string) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer source.Close()
+	defer func(source http.File) {
+		_ = source.Close()
+	}(source)
 
 	ensureDirectoryForFileExists(dst)
 	destination, err := os.Create(dst)
 	if err != nil {
 		return 0, err
 	}
-	defer destination.Close()
+	defer func(destination *os.File) {
+		_ = destination.Close()
+	}(destination)
 	nBytes, err := io.Copy(destination, source)
 	return nBytes, err
 }
@@ -64,10 +69,15 @@ func readFileFromAssets(src string) string {
 	if err != nil {
 		panic(err)
 	}
-	defer source.Close()
+	defer func(source http.File) {
+		_ = source.Close()
+	}(source)
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(source)
+	_, err = buf.ReadFrom(source)
+	if err != nil {
+		log.Fatal("could not read file from internal assets", err)
+	}
 	return buf.String()
 }
 

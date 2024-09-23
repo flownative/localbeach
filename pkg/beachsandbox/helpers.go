@@ -16,7 +16,6 @@ package beachsandbox
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path"
 	"strings"
@@ -61,7 +60,7 @@ func loadLocalBeachEnvironment(projectRootPath string) (err error) {
 
 		if _, err := os.Stat(envPathAndFilename); err == nil {
 
-			source, err := ioutil.ReadFile(envPathAndFilename)
+			source, err := os.ReadFile(envPathAndFilename)
 			if err != nil {
 				return errors.New("failed loading environment file " + envPathAndFilename + ": " + err.Error())
 			}
