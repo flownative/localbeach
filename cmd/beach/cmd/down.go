@@ -54,7 +54,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 			log.Fatal(err)
 			return
 		}
-		commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "rm", "--force", "--stop", "-v"}
+		commandArgs := []string{"compose", "-f", sandbox.DockerComposeFilePath, "rm", "--force", "--stop", "-v"}
 		output, err := exec.RunCommand("docker", commandArgs)
 		if err != nil {
 			log.Fatal(output)

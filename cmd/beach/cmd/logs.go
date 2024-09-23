@@ -42,7 +42,7 @@ Docker containers (--containers).`,
 		}
 
 		if containers {
-			commandArgs := []string{"compose", "-f", sandbox.ProjectRootPath + "/.localbeach.docker-compose.yaml", "logs", "--tail=" + strconv.Itoa(tail)}
+			commandArgs := []string{"compose", "-f", sandbox.DockerComposeFilePath, "logs", "--tail=" + strconv.Itoa(tail)}
 			if follow {
 				commandArgs = append(commandArgs, "-f")
 			}

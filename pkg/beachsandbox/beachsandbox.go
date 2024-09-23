@@ -17,12 +17,14 @@ package beachsandbox
 import (
 	"errors"
 	"os"
+	"path/filepath"
 )
 
 type BeachSandbox struct {
 	ProjectName                        string ``
 	ProjectRootPath                    string ``
 	ProjectDataPersistentResourcesPath string ``
+	DockerComposeFilePath              string ``
 }
 
 func (sandbox *BeachSandbox) Init(rootPath string) error {
@@ -33,6 +35,7 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 		return err
 	}
 
+	sandbox.DockerComposeFilePath = filepath.Join(sandbox.ProjectRootPath, ".localbeach.docker-compose.yaml")
 	sandbox.ProjectName = os.Getenv("BEACH_PROJECT_NAME")
 
 	return nil
