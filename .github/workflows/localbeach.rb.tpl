@@ -9,10 +9,18 @@ class Localbeach < Formula
   version "{{VERSION}}"
   license "GPL-3.0-or-later"
 
-  if RUBY_PLATFORM.downcase.include?("darwin")
-    url "https://github.com/flownative/localbeach/releases/download/{{VERSION}}/beach_darwin_amd64.zip"
-    sha256 "{{DARWIN_SHA256SUM}}"
-  else
+  on_macos do
+    on_intel do
+      url "https://github.com/flownative/localbeach/releases/download/{{VERSION}}/beach_darwin_amd64.zip"
+      sha256 "{{DARWIN_AMD64_SHA256SUM}}"
+    end
+    on_arm do
+      url "https://github.com/flownative/localbeach/releases/download/{{VERSION}}/beach_darwin_arm64.zip"
+      sha256 "{{DARWIN_ARM64_SHA256SUM}}"
+    end
+  end
+
+  on_linux do
     url "https://github.com/flownative/localbeach/releases/download/{{VERSION}}/beach_linux_amd64.zip"
     sha256 "{{LINUX_SHA256SUM}}"
   end

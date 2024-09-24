@@ -11,7 +11,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     outputs:
-      darwin_sha256sum: ${{ steps.calculate-checksums-darwin.outputs.darwin_sha256sum }}
+      darwin_amd64_sha256sum: ${{ steps.calculate-checksums-darwin.outputs.darwin_amd64_sha256sum }}
+      darwin_arm64_sha256sum: ${{ steps.calculate-checksums-darwin.outputs.darwin_arm64_sha256sum }}
       linux_sha256sum: ${{ steps.calculate-checksums-linux.outputs.linux_sha256sum }}
     steps:
 
@@ -31,7 +32,7 @@ jobs:
 
       - name: Build
         run: |
-          targets=${@-"darwin/amd64 linux/amd64"}
+          targets=${@-"darwin/amd64 darwin/arm64 linux/amd64"}
 
           for target in $targets; do
             os="$(echo $target | cut -d '/' -f1)"
@@ -42,11 +43,17 @@ jobs:
             ls -la
           done
 
-      - name: Archive build result (darwin)
+      - name: Archive build result (darwin/amd64)
         uses: actions/upload-artifact@v4
         with:
-          name: beach-osx
+          name: beach-macos-intel
           path: beach_darwin_amd64.zip
+
+      - name: Archive build result (darwin/arm64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: beach-macos-arm
+          path: beach_darwin_arm64.zip
 
       - name: Archive build result (linux)
         uses: actions/upload-artifact@v4
@@ -61,15 +68,17 @@ jobs:
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
-          artifacts: "beach_linux_amd64.zip,beach_darwin_amd64.zip"
+          artifacts: "beach_linux_amd64.zip,beach_darwin_amd64.zip,beach_darwin_arm64.zip"
           artifactContentType: application/zip
           generateReleaseNotes: false
           makeLatest: true
           name: Release ${{ github.ref }}
 
-      - name: Calculate checksum (darwin)
+      - name: Calculate checksums (darwin)
         id: calculate-checksums-darwin
-        run: echo "darwin_sha256sum=$(sha256sum beach_darwin_amd64.zip | awk '//{print $1}')" >> $GITHUB_OUTPUT
+        run: |
+          echo "darwin_amd64_sha256sum=$(sha256sum --quiet beach_darwin_amd64.zip)" >> $GITHUB_OUTPUT
+          echo "darwin_arm64_sha256sum=$(sha256sum --quiet beach_darwin_arm64.zip)" >> $GITHUB_OUTPUT
 
       - name: Calculate checksum (linux)
         id: calculate-checksums-linux
@@ -105,7 +114,8 @@ jobs:
           _format-key: "{{key}}"
         env:
           INPUT_VERSION: ${{ env.RELEASE_VERSION }}
-          INPUT_DARWIN_SHA256SUM: ${{ needs.build.outputs.darwin_sha256sum }}
+          INPUT_DARWIN_AMD64_SHA256SUM: ${{ needs.build.outputs.darwin_amd64_sha256sum }}
+          INPUT_DARWIN_ARM64_SHA256SUM: ${{ needs.build.outputs.darwin_arm64_sha256sum }}
           INPUT_LINUX_SHA256SUM: ${{ needs.build.outputs.linux_sha256sum }}
 
       - name: Commit update
