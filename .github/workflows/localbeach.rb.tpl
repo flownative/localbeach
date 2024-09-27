@@ -9,6 +9,9 @@ class Localbeach < Formula
   version "{{VERSION}}"
   license "GPL-3.0-or-later"
 
+  depends_on "mkcert"
+  depends_on "nss"
+
   on_macos do
     on_intel do
       url "https://github.com/flownative/localbeach/releases/download/v{{VERSION}}/beach_darwin_amd64.zip"
@@ -25,17 +28,18 @@ class Localbeach < Formula
     sha256 "{{LINUX_SHA256SUM}}"
   end
 
-  depends_on "mkcert"
-  depends_on "nss"
-
   def install
     bin.install "beach" => "beach"
   end
 
   def caveats
     <<~EOS
-    Local Beach is built on top of Docker and Docker Compose.
-    You will need a working setup of both in order to use Local Beach.
+      Local Beach is built on top of Docker and Docker Compose.
+      You will need a working setup of both in order to use Local Beach.
     EOS
+  end
+
+  test do
+    assert_match "Local Beach v{{VERSION}}", shell_output("#{bin}/beach version")
   end
 end

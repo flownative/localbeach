@@ -72,13 +72,13 @@ jobs:
           artifactContentType: application/zip
           generateReleaseNotes: false
           makeLatest: true
-          name: Release ${{ github.ref }}
+          name: Release ${{ github.ref_name }}
 
       - name: Calculate checksums (darwin)
         id: calculate-checksums-darwin
         run: |
-          echo "darwin_amd64_sha256sum=$(sha256sum --quiet beach_darwin_amd64.zip)" >> $GITHUB_OUTPUT
-          echo "darwin_arm64_sha256sum=$(sha256sum --quiet beach_darwin_arm64.zip)" >> $GITHUB_OUTPUT
+          echo "darwin_amd64_sha256sum=$(sha256sum beach_darwin_amd64.zip | awk '//{print $1}')" >> $GITHUB_OUTPUT
+          echo "darwin_arm64_sha256sum=$(sha256sum beach_darwin_arm64.zip | awk '//{print $1}')" >> $GITHUB_OUTPUT
 
       - name: Calculate checksum (linux)
         id: calculate-checksums-linux
