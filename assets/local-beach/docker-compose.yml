@@ -1,6 +1,5 @@
 networks:
   local_beach:
-    external: true
 
 services:
   webserver:
