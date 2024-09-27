@@ -15,7 +15,6 @@
 package beachsandbox
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 )
