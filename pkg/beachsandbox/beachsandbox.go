@@ -15,13 +15,16 @@
 package beachsandbox
 
 import (
+	"errors"
 	"os"
+	"path/filepath"
 )
 
 type BeachSandbox struct {
 	ProjectName                        string ``
 	ProjectRootPath                    string ``
 	ProjectDataPersistentResourcesPath string ``
+	DockerComposeFilePath              string ``
 }
 
 func (sandbox *BeachSandbox) Init(rootPath string) error {
@@ -32,6 +35,7 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 		return err
 	}
 
+	sandbox.DockerComposeFilePath = filepath.Join(sandbox.ProjectRootPath, ".localbeach.docker-compose.yaml")
 	sandbox.ProjectName = os.Getenv("BEACH_PROJECT_NAME")
 
 	return nil
@@ -50,7 +54,7 @@ func GetActiveSandbox() (*BeachSandbox, error) {
 // GetRawSandbox returns the (unconfigured) sandbox based on the current working dir
 func GetRawSandbox() (*BeachSandbox, error) {
 	rootPath, err := detectProjectRootPathFromWorkingDir()
-	if err == ErrNoFlowFound {
+	if errors.Is(err, ErrNoFlowFound) {
 		return nil, err
 	}
 

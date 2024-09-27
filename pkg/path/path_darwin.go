@@ -15,7 +15,6 @@
 // 💡 See https://golang.org/cmd/go/#hdr-Build_constraints for explanation of build constraints
 
 //go:build darwin
-// +build darwin
 
 package path
 

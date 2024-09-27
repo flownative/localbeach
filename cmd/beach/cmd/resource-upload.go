@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -124,7 +125,7 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		}
 
 		_, err = bucket.Object(filename).Attrs(ctx)
-		if err == storage.ErrObjectNotExist || force == true {
+		if errors.Is(err, storage.ErrObjectNotExist) || force == true {
 			source, err := os.Open(pathAndFilename)
 			if err != nil {
 				log.Fatal(err)
@@ -132,12 +133,12 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 			}
 			destination := bucket.Object(filename).NewWriter(ctx)
 			if _, err = io.Copy(destination, source); err != nil {
-				source.Close()
+				_ = source.Close()
 				log.Fatal(err)
 				return
 			}
 			if err := destination.Close(); err != nil {
-				source.Close()
+				_ = source.Close()
 				log.Fatal(err)
 				return
 			}

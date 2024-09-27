@@ -85,7 +85,9 @@ func handleInitRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Error(err)
 	}
-	defer destination.Close()
+	defer func(destination *os.File) {
+		_ = destination.Close()
+	}(destination)
 	destination.WriteString(environmentContent)
 	log.Info("Created '.localbeach.dist.env'.")
 
