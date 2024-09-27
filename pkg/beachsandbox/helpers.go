@@ -24,8 +24,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var ErrNoLocalBeachConfigurationFound = errors.New("found a Flow or Neos installation but no Local Beach configuration – run \"beach init\" to create some")
-var ErrNoFlowFound = errors.New("could not find Flow or Neos installation in your current path - try running \"composer install\" to fix that")
+var ErrNoLocalBeachConfigurationFound = errors.New("could not find a Local Beach configuration – run \"beach init\" to create some")
+var ErrNoFlowFound = errors.New("could not find Flow or Neos installation - try running \"composer install\" to fix that")
 
 func detectProjectRootPathFromWorkingDir() (rootPath string, err error) {
 	workingDirPath, err := os.Getwd()
@@ -40,13 +40,10 @@ func detectProjectRootPathFromWorkingDir() (rootPath string, err error) {
 func detectProjectRootPath(currentPath string) (projectRootPath string, err error) {
 	projectRootPath = path.Clean(currentPath)
 
-	if info, err := os.Stat(filepath.Join(projectRootPath, "flow")); err == nil && !info.IsDir() {
-		if _, err := os.Stat(filepath.Join(projectRootPath, ".localbeach.docker-compose.yaml")); err == nil {
-			return projectRootPath, err
-		}
-		return projectRootPath, ErrNoLocalBeachConfigurationFound
+	if _, err := os.Stat(filepath.Join(projectRootPath, ".localbeach.docker-compose.yaml")); err == nil {
+		return projectRootPath, err
 	} else if projectRootPath == "/" {
-		return "", ErrNoFlowFound
+		return "", ErrNoLocalBeachConfigurationFound
 	}
 
 	return detectProjectRootPath(path.Dir(projectRootPath))

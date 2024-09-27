@@ -50,7 +50,7 @@ func handleDownRun(cmd *cobra.Command, args []string) {
 	for _, instanceRoot := range instanceRoots {
 		log.Info("Stopping instance in " + instanceRoot + "...")
 		sandbox, err := beachsandbox.GetSandbox(instanceRoot)
-		if err != nil {
+		if err != nil && !errors.Is(err, beachsandbox.ErrNoFlowFound) {
 			log.Fatal(err)
 			return
 		}
