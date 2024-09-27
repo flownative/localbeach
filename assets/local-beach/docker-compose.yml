@@ -1,5 +1,6 @@
 networks:
   local_beach:
+    name: local_beach
 
 services:
   webserver:
