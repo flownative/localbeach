@@ -15,14 +15,15 @@
 package cmd
 
 import (
-	"os"
-	"path/filepath"
-	"strings"
-
+	"errors"
 	"github.com/flownative/localbeach/pkg/exec"
 	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 // setupCmd represents the setup command
@@ -66,7 +67,7 @@ func migrateOldBase() error {
 		}
 
 		log.Info("moving database data")
-		err = os.Rename(filepath.Join(path.OldBase, "MariaDB"), path.Database)
+		err = os.Rename(filepath.Join(path.OldBase, "MariaDB"), path.MariaDBDatabase)
 		if err != nil {
 			if os.IsNotExist(err) {
 				log.Error(err)
@@ -114,27 +115,113 @@ func setupLocalBeach() error {
 		log.Error(err)
 	}
 
-	log.Debug("creating directory for databases at " + path.Database)
-	err = os.MkdirAll(path.Database, os.ModePerm)
+	log.Debug("creating directory for databases at " + path.MySQLDatabase)
+	err = os.MkdirAll(path.MySQLDatabase, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		log.Error(err)
 	}
 
-	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
-
-	destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
+	err = migrateMariaDBToMySQL()
 	if err != nil {
-		log.Error("failed creating docker-compose.yml: ", err)
-	} else {
-		_, err = destination.WriteString(composeFileContent)
-		if err != nil {
-			log.Error(err)
-		}
-
+		return err
 	}
-	_ = destination.Close()
+
+	writeLocalBeachComposeFile()
 
 	return nil
+}
+
+func migrateMariaDBToMySQL() error {
+	_, err := os.Stat(path.MariaDBDatabase)
+	if err == nil {
+		log.Info("Migrating MariaDB data from " + path.MariaDBDatabase + " to MySQL at " + path.MySQLDatabase)
+		log.Warn("Note: This may take a while, depending on DB size!")
+
+		if err = startMariaDB(); err != nil {
+			return err
+		}
+
+		log.Debug("dumping data from MariaDB to MySQL")
+		commandArgs := []string{"exec", "local_beach_mariadb", "bash", "-c"}
+		commandArgs = append(commandArgs, "mysql -h local_beach_mariadb -u root -ppassword --batch --skip-column-names -e \"SHOW DATABASES;\" | grep -E -v \"(information|performance)_schema|mysql|sys\"")
+		databases, err := exec.RunCommand("docker", commandArgs)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+
+		for _, database := range strings.Split(strings.TrimSuffix(databases, "\n"), "\n") {
+			log.Debug("… " + database)
+			commandArgs = []string{"exec", "local_beach_database", "bash", "-c"}
+			commandArgs = append(commandArgs, "mysqldump -h local_beach_mariadb -u root -ppassword --add-drop-trigger --compress --comments --dump-date --hex-blob --quote-names --routines --triggers --no-autocommit --no-tablespaces --skip-lock-tables --single-transaction --quick --databases "+database+" | sed -e \"s/DEFAULT '{}' COMMENT '(DC2Type:json)'/DEFAULT (JSON_OBJECT()) COMMENT '(DC2Type:json)'/\" | mysql -h local_beach_database -u root -ppassword")
+			_, err := exec.RunCommand("docker", commandArgs)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+
+		if err = stopMariaDB(); err != nil {
+			return err
+		}
+	}
+
+	log.Info("Done with migration to MySQL at " + path.MySQLDatabase)
+	log.Info("If all works as expected, remove " + path.MariaDBDatabase)
+
+	return nil
+}
+
+func startMariaDB() error {
+	log.Debug("starting MariaDB server ...")
+
+	writeMariaDBComposeFile()
+
+	commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "mariadb-compose.yml"), "up", "-d"}
+	err := exec.RunInteractiveCommand("docker", commandArgs)
+	if err != nil {
+		return errors.New("Database container startup failed")
+	}
+
+	log.Debug("waiting for MariaDB server ...")
+	tries := 1
+	for {
+		output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_mariadb"})
+		if err != nil {
+			return errors.New("failed to check for MariaDB server container health")
+		}
+		if strings.TrimSpace(output) == "healthy" {
+			break
+		}
+		if tries == 10 {
+			return errors.New("timeout waiting for MariaDB server to start")
+		}
+		tries++
+		time.Sleep(3 * time.Second)
+	}
+
+	log.Debug("waiting for MySQL server ...")
+	tries = 1
+	for {
+		output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
+		if err != nil {
+			return errors.New("failed to check for MySQL server container health")
+		}
+		if strings.TrimSpace(output) == "healthy" {
+			break
+		}
+		if tries == 10 {
+			return errors.New("timeout waiting for MySQL server to start")
+		}
+		tries++
+		time.Sleep(3 * time.Second)
+	}
+
+	return nil
+}
+func stopMariaDB() error {
+	log.Debug("stopping MariaDB server ...")
+	commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "mariadb-compose.yml"), "rm", "--force", "--stop", "-v"}
+	_, err := exec.RunCommand("docker", commandArgs)
+
+	return err
 }
