@@ -21,6 +21,7 @@ package path
 import (
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var OldBase = ""
@@ -36,8 +37,8 @@ func init() {
 		return
 	}
 
-	OldBase = homeDir + "/.Flownative/Local Beach/"
-	Base = homeDir + "/.LocalBeach/"
-	Certificates = Base + "Certificates/"
-	Database = Base + "MariaDB/"
+	OldBase = filepath.Join(homeDir, ".Flownative", "Local Beach")
+	Base = filepath.Join(homeDir, ".LocalBeach")
+	Certificates = filepath.Join(Base, "Certificates")
+	Database = filepath.Join(Base, "MariaDB")
 }
