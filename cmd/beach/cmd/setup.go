@@ -55,7 +55,7 @@ func setupLocalBeach() error {
 		log.Info("migrating old data from " + path.OldBase + " to " + path.Base)
 
 		log.Info("stopping reverse proxy and database server")
-		commandArgs := []string{"compose", "-f", path.OldBase + "docker-compose.yml", "rm", "--force", "--stop", "-v"}
+		commandArgs := []string{"compose", "-f", filepath.Join(path.OldBase, "docker-compose.yml"), "rm", "--force", "--stop", "-v"}
 		output, err := exec.RunCommand("docker", commandArgs)
 		if err != nil {
 			log.Error(output)
