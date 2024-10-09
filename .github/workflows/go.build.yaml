@@ -40,8 +40,13 @@ jobs:
             echo "--> Building project for: ${os}/${arch}"
             GOOS=$os GOARCH=$arch CGO_ENABLED=0 go build -ldflags "-X github.com/flownative/localbeach/pkg/version.Version=${GITHUB_REF#refs/*/}" -o beach .
             zip "beach_${os}_${arch}.zip" beach
-            ls -la
           done
+
+          echo "--> Building project for: windows/amd64"
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X github.com/flownative/localbeach/pkg/version.Version=${GITHUB_REF#refs/*/}" -o beach.exe .
+          zip "beach_${os}_${arch}.zip" beach.exe
+
+          ls -la
 
       - name: Archive build result (darwin/amd64)
         uses: actions/upload-artifact@v4
@@ -61,6 +66,12 @@ jobs:
           name: beach-linux
           path: beach_linux_amd64.zip
 
+      - name: Archive build result (windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: beach-windows
+          path: beach_windows_amd64.zip
+
       - name: Create Release
         uses: ncipollo/release-action@v1
         env:
@@ -68,7 +79,7 @@ jobs:
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
-          artifacts: "beach_linux_amd64.zip,beach_darwin_amd64.zip,beach_darwin_arm64.zip"
+          artifacts: "beach_linux_amd64.zip,beach_darwin_amd64.zip,beach_darwin_arm64.zip,beach_windows_amd64.zip"
           artifactContentType: application/zip
           generateReleaseNotes: false
           makeLatest: true
