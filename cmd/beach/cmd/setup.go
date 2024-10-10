@@ -42,15 +42,8 @@ func handleSetupRun(cmd *cobra.Command, args []string) {
 	_ = setupLocalBeach()
 }
 
-func setupLocalBeach() error {
-	log.Debug("setting up Local Beach with base path " + path.Base)
-
-	err := os.MkdirAll(path.Base, os.ModePerm)
-	if err != nil {
-		log.Error(err)
-	}
-
-	_, err = os.Stat(path.OldBase)
+func migrateOldBase() error {
+	_, err := os.Stat(path.OldBase)
 	if err == nil {
 		log.Info("migrating old data from " + path.OldBase + " to " + path.Base)
 
@@ -97,6 +90,22 @@ func setupLocalBeach() error {
 		if err != nil {
 			log.Error(err)
 		}
+	}
+
+	return nil
+}
+
+func setupLocalBeach() error {
+	log.Debug("setting up Local Beach with base path " + path.Base)
+
+	err := os.MkdirAll(path.Base, os.ModePerm)
+	if err != nil {
+		log.Error(err)
+	}
+
+	err = migrateOldBase()
+	if err != nil {
+		return err
 	}
 
 	log.Debug("creating directory for certificates at " + path.Certificates)
