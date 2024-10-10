@@ -1,4 +1,5 @@
 /bin
 /assets/compiled.go
 /beach
+/beach.exe
 go_build_main_go
