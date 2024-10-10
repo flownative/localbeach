@@ -173,7 +173,7 @@ func startLocalBeach() error {
 		_ = destination.Close()
 
 		log.Info("Starting reverse proxy and database server ...")
-		commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "up", "--remove-orphans", "-d"}
+		commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "docker-compose.yml"), "up", "--remove-orphans", "-d"}
 		err = exec.RunInteractiveCommand("docker", commandArgs)
 		if err != nil {
 			return errors.New("container startup failed")

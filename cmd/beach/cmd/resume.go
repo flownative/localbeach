@@ -19,6 +19,7 @@ import (
 	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"path/filepath"
 )
 
 // resumeCmd represents the resume command
@@ -36,7 +37,7 @@ func init() {
 
 func handleResumeRun(cmd *cobra.Command, args []string) {
 	log.Info("Starting reverse proxy and database server ...")
-	commandArgs := []string{"compose", "-f", path.Base + "docker-compose.yml", "start", "webserver", "database"}
+	commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "docker-compose.yml"), "start", "webserver", "database"}
 	output, err := exec.RunCommand("docker", commandArgs)
 	if err != nil {
 		log.Fatal(output)

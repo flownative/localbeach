@@ -17,6 +17,7 @@ package beachsandbox
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type BeachSandbox struct {
@@ -36,8 +37,8 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 
 	sandbox.DockerComposeFilePath = filepath.Join(sandbox.ProjectRootPath, ".localbeach.docker-compose.yaml")
 	sandbox.ProjectName = os.Getenv("BEACH_PROJECT_NAME")
-	sandbox.FlowRootPath = os.Getenv("BEACH_FLOW_ROOTPATH")
-	sandbox.ProjectDataPersistentResourcesPath = filepath.Join(rootPath, sandbox.FlowRootPath, "/Data/Persistent/Resources")
+	sandbox.FlowRootPath = strings.Trim(os.Getenv("BEACH_FLOW_ROOTPATH"), "/")
+	sandbox.ProjectDataPersistentResourcesPath = filepath.Join(sandbox.ProjectRootPath, sandbox.FlowRootPath, "Data/Persistent/Resources")
 
 	if info, err := os.Stat(filepath.Join(sandbox.ProjectRootPath, sandbox.FlowRootPath, "flow")); err == nil && !info.IsDir() {
 		return nil

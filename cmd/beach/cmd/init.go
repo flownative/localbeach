@@ -17,7 +17,6 @@ package cmd
 import (
 	"os"
 	"path"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -80,11 +79,13 @@ func handleInitRun(cmd *cobra.Command, args []string) {
 	}
 	log.Info("Created 'Configuration/Development/Beach/Settings.yaml'.")
 
+	flowRootPath = strings.Trim(flowRootPath, "/")
+
 	environmentContent := readFileFromAssets("project/.localbeach.dist.env")
 	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_PROJECT_NAME}", projectName)
 	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_PROJECT_NAME_LOWERCASE}", strings.ToLower(projectName))
 	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_FLOW_ROOTPATH}", flowRootPath)
-	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_APPLICATION_PATH}", filepath.Join("/application", flowRootPath))
+	environmentContent = strings.ReplaceAll(environmentContent, "${BEACH_APPLICATION_PATH}", "/application/"+flowRootPath)
 
 	destination, err := os.Create(".localbeach.dist.env")
 	if err != nil {
