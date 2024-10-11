@@ -136,6 +136,42 @@ func retrieveCloudStorageCredentials(instanceIdentifier string, projectNamespace
 	return nil, bucketName, privateKey
 }
 
+func writeLocalBeachComposeFile() {
+	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{mysqlDatabasePath}}", path.MySQLDatabase)
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
+
+	destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
+	if err != nil {
+		log.Error("failed creating docker-compose.yml: ", err)
+	} else {
+		_, err = destination.WriteString(composeFileContent)
+		if err != nil {
+			log.Error(err)
+		}
+
+	}
+	_ = destination.Close()
+}
+
+func writeMariaDBComposeFile() {
+	composeFileContent := readFileFromAssets("local-beach/mariadb-compose.yml")
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{mysqlDatabasePath}}", path.MySQLDatabase)
+	composeFileContent = strings.ReplaceAll(composeFileContent, "{{mariadbDatabasePath}}", path.MariaDBDatabase)
+
+	destination, err := os.Create(filepath.Join(path.Base, "mariadb-compose.yml"))
+	if err != nil {
+		log.Error("failed creating mariadb-compose.yml: ", err)
+	} else {
+		_, err = destination.WriteString(composeFileContent)
+		if err != nil {
+			log.Error(err)
+		}
+
+	}
+	_ = destination.Close()
+}
+
 func startLocalBeach() error {
 	_, err := os.Stat(path.Base)
 	if os.IsNotExist(err) {
@@ -156,21 +192,7 @@ func startLocalBeach() error {
 	}
 
 	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
-		composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-		composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
-		composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
-
-		destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
-		if err != nil {
-			log.Error("failed creating docker-compose.yml: ", err)
-		} else {
-			_, err = destination.WriteString(composeFileContent)
-			if err != nil {
-				log.Error(err)
-			}
-
-		}
-		_ = destination.Close()
+		writeLocalBeachComposeFile()
 
 		log.Info("Starting reverse proxy and database server ...")
 		commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "docker-compose.yml"), "up", "--remove-orphans", "-d"}

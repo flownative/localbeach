@@ -1,21 +1,8 @@
 networks:
   local_beach:
-    name: local_beach
+    external: true
 
 services:
-  webserver:
-    image: flownative/localbeach-nginx-proxy:0.4.2
-    container_name: local_beach_nginx
-    networks:
-      - local_beach
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - {{certificatesPath}}:/etc/nginx/certs
-    environment:
-      - DEFAULT_HOST=hello.localbeach.net
   database:
     image: mysql:8
     container_name: local_beach_database
@@ -35,3 +22,21 @@ services:
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: local_beach_mariadb
+    networks:
+      - local_beach
+    volumes:
+      - {{mariadbDatabasePath}}:/var/lib/mysql
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=password --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 10
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+    ports:
+      - 3306:3306
+    command: 'mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci'
