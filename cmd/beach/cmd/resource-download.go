@@ -113,7 +113,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 			log.Error(err)
 		} else {
 			source := bucket.Object(attributes.Name)
-			targetPath := filepath.Dir(filepath.Join(resourcesPath, getRelativePersistentResourcePathByHash(attributes.Name)))
+			targetPath := filepath.Join(resourcesPath, getRelativePersistentResourcePathByHash(attributes.Name))
 
 			err = os.MkdirAll(targetPath, 0755)
 			if err != nil {
