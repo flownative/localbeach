@@ -29,7 +29,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-var instanceIdentifier, projectNamespace, projectCluster, bucketName, resourcesPath, resumeWithFile string
+var targetBucketName, sourceResourcesPath, resumeWithFile string
 var force bool
 
 // resourceUploadCmd represents the resource-upload command
@@ -62,7 +62,7 @@ Notes:
 func init() {
 	resourceUploadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to upload to, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceUploadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to upload to, eg. 'beach-project-123abc45-def6-7890-abcd-1234567890ab'")
-	resourceUploadCmd.Flags().StringVar(&projectCluster, "cluster", "", "The cluster name of the Beach instance to upload to, eg. 'h9acc4'")
+	resourceUploadCmd.Flags().StringVar(&clusterIdentifier, "cluster", "", "The cluster identifier of the Beach instance to upload to, eg. 'h9acc4'")
 	resourceUploadCmd.Flags().BoolVar(&force, "force", false, "Force uploading resources which already exist in the target bucket")
 	resourceUploadCmd.Flags().StringVar(&resumeWithFile, "resume-with-file", "", "If specified, resume uploading resources starting with the given filename, eg. '12dcde4c13142942288c5a973caf0fa720ed2794'")
 	_ = resourceUploadCmd.MarkFlagRequired("instance")
@@ -76,23 +76,23 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		log.Fatal("Could not activate sandbox: ", err)
 		return
 	}
-	if resourcesPath == "" {
-		resourcesPath = sandbox.ProjectDataPersistentResourcesPath
+	if sourceResourcesPath == "" {
+		sourceResourcesPath = sandbox.ProjectDataPersistentResourcesPath
 	}
-	_, err = os.Stat(resourcesPath)
+	_, err = os.Stat(sourceResourcesPath)
 	if err != nil {
-		log.Fatal("The path %v does not exist", resourcesPath)
+		log.Fatal("The path %v does not exist", sourceResourcesPath)
 		return
 	}
 
-	err, bucketNameFromCredentials, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
+	err, bucketNameFromCredentials, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace, clusterIdentifier)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	if bucketName == "" {
-		bucketName = bucketNameFromCredentials
+	if targetBucketName == "" {
+		targetBucketName = bucketNameFromCredentials
 	}
 
 	ctx := context.Background()
@@ -102,10 +102,10 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	log.Info(fmt.Sprintf("Uploading resources from local directory %v to bucket %v...", resourcesPath, bucketName))
+	log.Info(fmt.Sprintf("Uploading resources from local directory %v to bucket %v...", sourceResourcesPath, targetBucketName))
 
 	var fileList []string
-	err = filepath.Walk(resourcesPath, func(path string, f os.FileInfo, err error) error {
+	err = filepath.Walk(sourceResourcesPath, func(path string, f os.FileInfo, err error) error {
 		if !f.IsDir() {
 			fileList = append(fileList, path)
 		}
@@ -116,7 +116,7 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	bucket := client.Bucket(bucketName)
+	bucket := client.Bucket(targetBucketName)
 	for _, pathAndFilename := range fileList {
 		filename := filepath.Base(pathAndFilename)
 

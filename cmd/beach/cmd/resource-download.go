@@ -29,6 +29,8 @@ import (
 	"path/filepath"
 )
 
+var sourceBucketName, targetResourcesPath string
+
 // resourceDownloadCmd represents the resource-download command
 var resourceDownloadCmd = &cobra.Command{
 	Use:   "resource-download",
@@ -59,9 +61,9 @@ Notes:
 func init() {
 	resourceDownloadCmd.Flags().StringVar(&instanceIdentifier, "instance", "", "instance identifier of the Beach instance to download from, eg. 'instance-123abc45-def6-7890-abcd-1234567890ab'")
 	resourceDownloadCmd.Flags().StringVar(&projectNamespace, "namespace", "", "The project namespace of the Beach instance to download from, eg. 'beach-project-123abc45-def6-7890-abcd-1234567890ab'")
-	resourceDownloadCmd.Flags().StringVar(&projectCluster, "cluster", "", "The cluster name of the Beach instance to download from, eg. 'h9acc4'")
-	resourceDownloadCmd.Flags().StringVar(&bucketName, "bucket", "", "name of the bucket to download resources from")
-	resourceDownloadCmd.Flags().StringVar(&resourcesPath, "resources-path", "", "custom path where to store the downloaded resources, e.g. 'Data/Persistent/Protected'")
+	resourceDownloadCmd.Flags().StringVar(&clusterIdentifier, "cluster", "", "The cluster identifier of the Beach instance to download from, eg. 'h9acc4'")
+	resourceDownloadCmd.Flags().StringVar(&sourceBucketName, "bucket", "", "name of the bucket to download resources from")
+	resourceDownloadCmd.Flags().StringVar(&targetResourcesPath, "resources-path", "", "custom path where to store the downloaded resources, e.g. 'Data/Persistent/Protected'")
 	_ = resourceDownloadCmd.MarkFlagRequired("instance")
 	_ = resourceDownloadCmd.MarkFlagRequired("namespace")
 	rootCmd.AddCommand(resourceDownloadCmd)
@@ -74,24 +76,24 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	if resourcesPath == "" {
-		resourcesPath = sandbox.ProjectDataPersistentResourcesPath
+	if targetResourcesPath == "" {
+		targetResourcesPath = sandbox.ProjectDataPersistentResourcesPath
 	}
 
-	_, err = os.Stat(resourcesPath)
+	_, err = os.Stat(targetResourcesPath)
 	if err != nil {
-		log.Fatal(fmt.Sprintf("The path %v does not exist", resourcesPath))
+		log.Fatal(fmt.Sprintf("The path %v does not exist", targetResourcesPath))
 		return
 	}
 
-	err, bucketNameFromCredentials, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace)
+	err, bucketNameFromCredentials, privateKeyDecoded := retrieveCloudStorageCredentials(instanceIdentifier, projectNamespace, clusterIdentifier)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
 
-	if bucketName == "" {
-		bucketName = bucketNameFromCredentials
+	if sourceBucketName == "" {
+		sourceBucketName = bucketNameFromCredentials
 	}
 
 	ctx := context.Background()
@@ -101,9 +103,9 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	log.Info(fmt.Sprintf("Downloading resources from bucket %v to local directory %v ...", bucketName, resourcesPath))
+	log.Info(fmt.Sprintf("Downloading resources from bucket %v to local directory %v ...", sourceBucketName, targetResourcesPath))
 
-	bucket := client.Bucket(bucketName)
+	bucket := client.Bucket(sourceBucketName)
 	it := bucket.Objects(ctx, nil)
 	for {
 		attributes, err := it.Next()
@@ -114,7 +116,7 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 			log.Error(err)
 		} else {
 			source := bucket.Object(attributes.Name)
-			targetPathAndFilename := filepath.Join(resourcesPath, getRelativePersistentResourcePathByHash(attributes.Name), filepath.Base(attributes.Name))
+			targetPathAndFilename := filepath.Join(targetResourcesPath, getRelativePersistentResourcePathByHash(attributes.Name), filepath.Base(attributes.Name))
 
 			err = os.MkdirAll(filepath.Dir(targetPathAndFilename), 0755)
 			if err != nil {
