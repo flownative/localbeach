@@ -113,15 +113,15 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 			log.Error(err)
 		} else {
 			source := bucket.Object(attributes.Name)
-			targetPath := filepath.Dir(filepath.Join(resourcesPath, getRelativePersistentResourcePathByHash(attributes.Name)))
+			targetPathAndFilename := filepath.Join(resourcesPath, getRelativePersistentResourcePathByHash(attributes.Name), filepath.Base(attributes.Name))
 
-			err = os.MkdirAll(targetPath, 0755)
+			err = os.MkdirAll(filepath.Dir(targetPathAndFilename), 0755)
 			if err != nil {
 				log.Fatal(err)
 				return
 			}
 
-			file, err := os.OpenFile(filepath.Join(targetPath, filepath.Base(attributes.Name)), os.O_RDWR|os.O_CREATE, 0644)
+			file, err := os.OpenFile(targetPathAndFilename, os.O_RDWR|os.O_CREATE, 0644)
 			if err != nil {
 				log.Fatal(err)
 				return
