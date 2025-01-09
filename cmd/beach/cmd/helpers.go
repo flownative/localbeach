@@ -33,6 +33,8 @@ import (
 	asset "github.com/flownative/localbeach/assets"
 )
 
+var instanceIdentifier, projectNamespace, clusterIdentifier string
+
 func copyFileFromAssets(src, dst string) (int64, error) {
 	source, err := asset.Assets.Open(src)
 	if err != nil {
@@ -90,12 +92,18 @@ func getRelativePersistentResourcePathByHash(hash string) string {
 	}
 }
 
-func retrieveCloudStorageCredentials(instanceIdentifier string, projectNamespace string) (err error, bucketName string, privateKey []byte) {
+func retrieveCloudStorageCredentials(instanceIdentifier string, projectNamespace string, clusterIdentifier string) (err error, bucketName string, privateKey []byte) {
 	log.Info("Retrieving cloud storage access data from instance")
 
 	internalHost := "beach@" + instanceIdentifier + "." + projectNamespace
+	jumpHost := ""
+	if clusterIdentifier != "" {
+		jumpHost = "beach@ssh." + clusterIdentifier + ".flownative.cloud"
+	} else {
+		jumpHost = "beach@ssh.flownative.cloud"
+	}
 	output, err := exec.RunCommand("ssh", []string{
-		"-J", "beach@ssh.flownative.cloud", internalHost,
+		"-J", jumpHost, internalHost,
 		"/bin/bash", "-c", "env | grep BEACH_GOOGLE_CLOUD_STORAGE_",
 	})
 	if err != nil {
