@@ -4,7 +4,7 @@ networks:
 
 services:
   database:
-    image: mysql:8
+    image: mysql:8.0
     container_name: local_beach_database
     networks:
       - local_beach
