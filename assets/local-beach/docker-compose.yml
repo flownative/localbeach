@@ -4,7 +4,7 @@ networks:
 
 services:
   webserver:
-    image: flownative/localbeach-nginx-proxy:0.4.2
+    image: flownative/localbeach-nginx-proxy:0.5.0
     container_name: local_beach_nginx
     networks:
       - local_beach
