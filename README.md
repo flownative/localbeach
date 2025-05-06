@@ -8,7 +8,7 @@ account nor be a  [Flownative](https://www.flownative.com) customer in order to 
 free (as in free beer, or free coffee).
 
 This README currently only contains basic information about Local Beach. You may find more information on the 
-[Local Beach website](https://www.flownative.com/localbeach). 
+[Local Beach website](https://www.flownative.com/localbeach.html). 
 
 These are the [setup instructions](https://www.flownative.com/en/documentation/guides/localbeach/local-beach-setup-docker-based-neos-development-howto.html) for Local Beach.
 Currently, automatic installation via Homebrew is supported.
