@@ -66,7 +66,7 @@ func init() {
 	resourceDownloadCmd.Flags().StringVar(&clusterIdentifier, "cluster", "", "The cluster identifier of the Beach instance to download from, eg. 'h9acc4'")
 	resourceDownloadCmd.Flags().StringVar(&sourceBucketName, "bucket", "", "name of the bucket to download resources from")
 	resourceDownloadCmd.Flags().StringVar(&targetResourcesPath, "resources-path", "", "custom path where to store the downloaded resources, e.g. 'Data/Persistent/Protected'")
-	resourceDownloadCmd.Flags().BoolVar(&synchronize, "sync", false, "Skip existing and unchanged files")
+	resourceDownloadCmd.Flags().BoolVar(&synchronize, "sync", false, "Skip unchanged existing files")
 
 	_ = resourceDownloadCmd.MarkFlagRequired("instance")
 	_ = resourceDownloadCmd.MarkFlagRequired("namespace")
