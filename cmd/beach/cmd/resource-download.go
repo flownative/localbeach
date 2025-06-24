@@ -27,9 +27,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"hash/crc32"
 )
 
 var sourceBucketName, targetResourcesPath string
+var synchronize bool
 
 // resourceDownloadCmd represents the resource-download command
 var resourceDownloadCmd = &cobra.Command{
@@ -64,6 +66,8 @@ func init() {
 	resourceDownloadCmd.Flags().StringVar(&clusterIdentifier, "cluster", "", "The cluster identifier of the Beach instance to download from, eg. 'h9acc4'")
 	resourceDownloadCmd.Flags().StringVar(&sourceBucketName, "bucket", "", "name of the bucket to download resources from")
 	resourceDownloadCmd.Flags().StringVar(&targetResourcesPath, "resources-path", "", "custom path where to store the downloaded resources, e.g. 'Data/Persistent/Protected'")
+	resourceDownloadCmd.Flags().BoolVar(&synchronize, "sync", false, "Skip unchanged existing files")
+
 	_ = resourceDownloadCmd.MarkFlagRequired("instance")
 	_ = resourceDownloadCmd.MarkFlagRequired("namespace")
 	rootCmd.AddCommand(resourceDownloadCmd)
@@ -124,6 +128,13 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 				return
 			}
 
+      if synchronize == true {
+        if checkFileExists(targetPathAndFilename, attributes) {
+          log.Debug("Skipped " + attributes.Name + " as it already exists");
+          continue
+        }
+      }
+
 			file, err := os.OpenFile(targetPathAndFilename, os.O_RDWR|os.O_CREATE, 0644)
 			if err != nil {
 				log.Fatal(err)
@@ -148,4 +159,24 @@ func handleResourceDownloadRun(cmd *cobra.Command, args []string) {
 
 	log.Info("Done")
 	return
+}
+
+func checkFileExists(targetPathAndFilename string, attributes *storage.ObjectAttrs) bool {
+	if _, err := os.Stat(targetPathAndFilename); err == nil {
+		file, err := os.Open(targetPathAndFilename)
+		if err != nil {
+				return false
+		}
+		defer file.Close()
+
+		crc32c := crc32.New(crc32.MakeTable(crc32.Castagnoli))
+		if _, err := io.Copy(crc32c, file); err != nil {
+				return false
+		}
+
+		if crc32c.Sum32() == attributes.CRC32C {
+			return true
+		}
+	}
+	return false
 }
