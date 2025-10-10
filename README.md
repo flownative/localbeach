@@ -47,4 +47,4 @@ For a slightly quicker build, use `make compile`.
 This library was developed by Robert Lemke with major contributions by Karsten Dambekalns and Christian Müller. Feel 
 free to suggest new features, report bugs or provide bug fixes in our GitHub  project.
 
-Copyright 2019-2024 Robert Lemke, Karsten Dambekalns, Christian Müller, licensed under the Apache License, version 2.0.
+Copyright 2019-2025 Robert Lemke, Karsten Dambekalns, Christian Müller, licensed under the Apache License, version 2.0.
