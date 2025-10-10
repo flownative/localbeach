@@ -18,8 +18,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"syscall"
-	"unsafe"
 
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
@@ -47,14 +45,12 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	// Check if stdin is a TTY using syscall (more reliable than Mode check)
-	var termios syscall.Termios
-	_, _, errno := syscall.Syscall6(syscall.SYS_IOCTL, os.Stdin.Fd(), syscall.TIOCGETA, uintptr(unsafe.Pointer(&termios)), 0, 0, 0)
-	isTTY := errno == 0
+	// Check if stdin is a TTY (platform-specific implementation in tty_*.go)
+	stdinIsTTY := isTTY()
 
 	// Build Docker exec command with appropriate flags
 	commandArgs := []string{"exec"}
-	if isTTY {
+	if stdinIsTTY {
 		commandArgs = append(commandArgs, "-t", "-i")
 	}
 	// Note: No -i flag when not TTY since stdin isn't connected in RunCommand
@@ -66,7 +62,7 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 	}
 
 	// Use the appropriate execution method based on TTY detection
-	if isTTY {
+	if stdinIsTTY {
 		err = exec.RunInteractiveCommand("docker", commandArgs)
 		if err != nil {
 			log.Fatal(err)
