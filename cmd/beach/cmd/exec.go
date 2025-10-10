@@ -1,4 +1,4 @@
-// Copyright 2019-2024 Robert Lemke, Karsten Dambekalns, Christian Müller
+// Copyright 2019-2025 Robert Lemke, Karsten Dambekalns, Christian Müller
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"syscall"
+	"unsafe"
+
 	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 // execCmd represents the exec command
@@ -43,17 +47,36 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	commandArgs := []string{"exec", "-ti", sandbox.ProjectName + "_php"}
+	// Check if stdin is a TTY using syscall (more reliable than Mode check)
+	var termios syscall.Termios
+	_, _, errno := syscall.Syscall6(syscall.SYS_IOCTL, os.Stdin.Fd(), syscall.TIOCGETA, uintptr(unsafe.Pointer(&termios)), 0, 0, 0)
+	isTTY := errno == 0
+
+	// Build Docker exec command with appropriate flags
+	commandArgs := []string{"exec"}
+	if isTTY {
+		commandArgs = append(commandArgs, "-t", "-i")
+	}
+	// Note: No -i flag when not TTY since stdin isn't connected in RunCommand
+	commandArgs = append(commandArgs, sandbox.ProjectName+"_php")
 	if len(args) > 0 {
 		commandArgs = append(commandArgs, "bash", "-l", "-c", strings.Trim(fmt.Sprint(args), "[]"))
 	} else {
 		commandArgs = append(commandArgs, "bash")
 	}
 
-	err = exec.RunInteractiveCommand("docker", commandArgs)
-	if err != nil {
-		log.Fatal(err)
-		return
+	// Use the appropriate execution method based on TTY detection
+	if isTTY {
+		err = exec.RunInteractiveCommand("docker", commandArgs)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+	} else {
+		output, err := exec.RunCommand("docker", commandArgs)
+		fmt.Print(output)
+		if err != nil {
+			os.Exit(1)
+		}
 	}
-	return
 }
