@@ -142,6 +142,14 @@ func setupLocalBeach() error {
 
 	writeLocalBeachComposeFile()
 
+	// Start Local Beach after setup/migration
+	log.Info("Starting Local Beach...")
+	err = startLocalBeach()
+	if err != nil {
+		log.Error("Failed to start Local Beach: ", err)
+		return err
+	}
+
 	return nil
 }
 
