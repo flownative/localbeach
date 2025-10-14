@@ -107,7 +107,9 @@ func setupLocalBeach() error {
 	}
 
 	if len(databaseStatusOutput) != 0 {
-		bringBeachDown()
+		if err := bringBeachDown(); err != nil {
+			return fmt.Errorf("failed to bring Beach down: %w", err)
+		}
 	}
 
 	err = os.MkdirAll(path.Base, os.ModePerm)
