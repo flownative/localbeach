@@ -124,6 +124,7 @@ func setupLocalBeach() error {
 
 	err = migrateMariaDBToMySQL()
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 
@@ -164,10 +165,10 @@ func migrateMariaDBToMySQL() error {
 		if err = stopMariaDB(); err != nil {
 			return err
 		}
-	}
 
-	log.Info("Done with migration to MySQL at " + path.MySQLDatabase)
-	log.Info("If all works as expected, remove " + path.MariaDBDatabase)
+		log.Info("Done with migration to MySQL at " + path.MySQLDatabase)
+		log.Info("If all works as expected, remove " + path.MariaDBDatabase)
+	}
 
 	return nil
 }
