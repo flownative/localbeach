@@ -100,7 +100,16 @@ func migrateOldBase() error {
 func setupLocalBeach() error {
 	log.Debug("setting up Local Beach with base path " + path.Base)
 
-	err := os.MkdirAll(path.Base, os.ModePerm)
+	databaseStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_database", "--filter", "status=running", "-q"})
+	if err != nil {
+		log.Error(errors.New("failed checking status of container local_beach_database container"))
+	}
+
+	if len(databaseStatusOutput) != 0 {
+		bringBeachDown()
+	}
+
+	err = os.MkdirAll(path.Base, os.ModePerm)
 	if err != nil {
 		log.Error(err)
 	}
