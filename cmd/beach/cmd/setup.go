@@ -16,14 +16,15 @@ package cmd
 
 import (
 	"errors"
-	"github.com/flownative/localbeach/pkg/exec"
-	"github.com/flownative/localbeach/pkg/path"
-	log "github.com/sirupsen/logrus"
-	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/flownative/localbeach/pkg/exec"
+	"github.com/flownative/localbeach/pkg/path"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 // setupCmd represents the setup command

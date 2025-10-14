@@ -19,7 +19,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/flownative/localbeach/pkg/path"
 	"io"
 	"net/http"
 	"os"
@@ -28,6 +27,7 @@ import (
 	"time"
 
 	"github.com/flownative/localbeach/pkg/exec"
+	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
 
 	asset "github.com/flownative/localbeach/assets"

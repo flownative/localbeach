@@ -17,12 +17,12 @@ package cmd
 import (
 	"errors"
 	"path/filepath"
+	"strings"
 
 	"github.com/flownative/localbeach/pkg/exec"
 	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 var host string
