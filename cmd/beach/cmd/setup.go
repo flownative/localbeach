@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -143,41 +144,133 @@ func setupLocalBeach() error {
 }
 
 func migrateMariaDBToMySQL() error {
+	migrationMarkerPath := filepath.Join(path.Base, ".mariadb-to-mysql-migration-complete")
+
+	// Check if migration has already been completed
+	if _, err := os.Stat(migrationMarkerPath); err == nil {
+		log.Debug("MariaDB to MySQL migration already completed, skipping")
+		return nil
+	}
+
+	// Check if MariaDB data exists
 	_, err := os.Stat(path.MariaDBDatabase)
-	if err == nil {
-		log.Info("Migrating MariaDB data from " + path.MariaDBDatabase + " to MySQL at " + path.MySQLDatabase)
-		log.Warn("Note: This may take a while, depending on DB size!")
-
-		if err = startMariaDB(); err != nil {
-			return err
+	if err != nil {
+		// No MariaDB data to migrate
+		if os.IsNotExist(err) {
+			log.Debug("No MariaDB data found, skipping migration")
+			return nil
 		}
+		return fmt.Errorf("failed to check MariaDB database path: %w", err)
+	}
 
-		log.Debug("dumping data from MariaDB to MySQL")
-		commandArgs := []string{"exec", "local_beach_mariadb", "bash", "-c"}
-		commandArgs = append(commandArgs, "mysql -h local_beach_mariadb -u root -ppassword --batch --skip-column-names -e \"SHOW DATABASES;\" | grep -E -v \"(information|performance)_schema|mysql|sys\"")
-		databases, err := exec.RunCommand("docker", commandArgs)
-		if err != nil {
-			log.Error(err)
-			return err
+	log.Info("Migrating MariaDB data from " + path.MariaDBDatabase + " to MySQL at " + path.MySQLDatabase)
+	log.Warn("This process may take several minutes depending on database size.")
+	log.Warn("Please do not interrupt this process!")
+
+	// Start both database servers
+	if err = startMariaDB(); err != nil {
+		return fmt.Errorf("failed to start database servers for migration: %w", err)
+	}
+
+	// Ensure cleanup happens on error
+	defer func() {
+		if stopErr := stopMariaDB(); stopErr != nil {
+			log.Error("Failed to stop MariaDB after migration: ", stopErr)
 		}
+	}()
 
-		for _, database := range strings.Split(strings.TrimSuffix(databases, "\n"), "\n") {
-			log.Debug("… " + database)
+	// Get list of databases to migrate
+	log.Info("Step 1/3: Discovering databases to migrate...")
+	commandArgs := []string{"exec", "local_beach_mariadb", "bash", "-c"}
+	commandArgs = append(commandArgs, "mysql -h local_beach_mariadb -u root -ppassword --batch --skip-column-names -e \"SHOW DATABASES;\" | grep -E -v \"(information|performance)_schema|mysql|sys\"")
+	databases, err := exec.RunCommand("docker", commandArgs)
+	if err != nil {
+		return fmt.Errorf("failed to list databases from MariaDB: %w", err)
+	}
+
+	databaseList := strings.Split(strings.TrimSuffix(databases, "\n"), "\n")
+	if len(databaseList) == 0 || (len(databaseList) == 1 && databaseList[0] == "") {
+		log.Info("No databases found to migrate")
+	} else {
+		log.Info(fmt.Sprintf("Found %d database(s) to migrate", len(databaseList)))
+
+		// Migrate each database
+		log.Info("Step 2/3: Migrating databases...")
+		migratedCount := 0
+		for i, database := range databaseList {
+			if database == "" {
+				continue
+			}
+			log.Info(fmt.Sprintf("  [%d/%d] Migrating database: %s", i+1, len(databaseList), database))
 			commandArgs = []string{"exec", "local_beach_database", "bash", "-c"}
 			commandArgs = append(commandArgs, "mysqldump -h local_beach_mariadb -u root -ppassword --add-drop-trigger --compress --comments --dump-date --hex-blob --quote-names --routines --triggers --no-autocommit --no-tablespaces --skip-lock-tables --single-transaction --quick --databases "+database+" | sed -e \"s/DEFAULT '{}' COMMENT '(DC2Type:json)'/DEFAULT (JSON_OBJECT()) COMMENT '(DC2Type:json)'/\" | mysql -h local_beach_database -u root -ppassword")
-			_, err := exec.RunCommand("docker", commandArgs)
+			output, err := exec.RunCommand("docker", commandArgs)
 			if err != nil {
-				log.Error(err)
+				log.Error(fmt.Sprintf("Failed to migrate database %s: %v", database, err))
+				if output != "" {
+					log.Error("Output: ", output)
+				}
+				return fmt.Errorf("migration failed for database %s: %w", database, err)
 			}
+			migratedCount++
+			log.Info(fmt.Sprintf("  [%d/%d] Successfully migrated: %s", i+1, len(databaseList), database))
 		}
-
-		if err = stopMariaDB(); err != nil {
-			return err
-		}
-
-		log.Info("Done with migration to MySQL at " + path.MySQLDatabase)
-		log.Info("If all works as expected, remove " + path.MariaDBDatabase)
+		log.Info(fmt.Sprintf("Successfully migrated %d database(s)", migratedCount))
 	}
+
+	// Verify migration
+	log.Info("Step 3/3: Verifying migration...")
+	if err = verifyMigration(); err != nil {
+		return fmt.Errorf("migration verification failed: %w", err)
+	}
+
+	// Stop MariaDB
+	if err = stopMariaDB(); err != nil {
+		return fmt.Errorf("failed to stop MariaDB after migration: %w", err)
+	}
+
+	// Create migration marker file
+	markerFile, err := os.Create(migrationMarkerPath)
+	if err != nil {
+		log.Warn("Failed to create migration marker file: ", err)
+		log.Warn("Migration completed successfully, but may run again on next setup")
+	} else {
+		timestamp := time.Now().Format(time.RFC3339)
+		_, _ = markerFile.WriteString(fmt.Sprintf("Migration completed at: %s\n", timestamp))
+		markerFile.Close()
+	}
+
+	log.Info("✓ Migration to MySQL completed successfully!")
+	log.Info("")
+	log.Info("Your MariaDB data has been preserved at: " + path.MariaDBDatabase)
+	log.Info("Once you've verified everything works correctly, you can safely remove it with:")
+	log.Info("  rm -rf " + path.MariaDBDatabase)
+
+	return nil
+}
+
+func verifyMigration() error {
+	// Check that MySQL server is running and accessible
+	commandArgs := []string{"exec", "local_beach_database", "bash", "-c"}
+	commandArgs = append(commandArgs, "mysql -h local_beach_database -u root -ppassword --batch --skip-column-names -e \"SELECT 'OK';\"")
+	output, err := exec.RunCommand("docker", commandArgs)
+	if err != nil {
+		return fmt.Errorf("failed to connect to MySQL: %w", err)
+	}
+	if !strings.Contains(output, "OK") {
+		return errors.New("MySQL connection test failed")
+	}
+
+	// Get database count from MySQL
+	commandArgs = []string{"exec", "local_beach_database", "bash", "-c"}
+	commandArgs = append(commandArgs, "mysql -h local_beach_database -u root -ppassword --batch --skip-column-names -e \"SHOW DATABASES;\" | grep -E -v \"(information|performance)_schema|mysql|sys\" | wc -l")
+	mysqlDbCount, err := exec.RunCommand("docker", commandArgs)
+	if err != nil {
+		return fmt.Errorf("failed to count MySQL databases: %w", err)
+	}
+
+	mysqlDbCount = strings.TrimSpace(mysqlDbCount)
+	log.Info(fmt.Sprintf("Verification: Found %s database(s) in MySQL", mysqlDbCount))
 
 	return nil
 }
