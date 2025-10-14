@@ -205,7 +205,24 @@ func migrateMariaDBToMySQL() error {
 			}
 			log.Info(fmt.Sprintf("  [%d/%d] Migrating database: %s", i+1, len(databaseList), database))
 			commandArgs = []string{"exec", "local_beach_database", "bash", "-c"}
-			commandArgs = append(commandArgs, "mysqldump -h local_beach_mariadb -u root -ppassword --add-drop-trigger --compress --comments --dump-date --hex-blob --quote-names --routines --triggers --no-autocommit --no-tablespaces --skip-lock-tables --single-transaction --quick --databases "+database+" | sed -e \"s/DEFAULT '{}' COMMENT '(DC2Type:json)'/DEFAULT (JSON_OBJECT()) COMMENT '(DC2Type:json)'/\" | mysql -h local_beach_database -u root -ppassword")
+			// Remove DEFAULT clauses from JSON/TEXT/BLOB columns for MariaDB→MySQL 8.0 compatibility
+			// MySQL 8.0 is stricter about default values for these column types
+			// Need to handle both quoted strings ('{}'/'[]') and function calls (json_object()/json_array())
+			sedPatterns := "" +
+				"sed -e \"s/ DEFAULT '[^']*' COMMENT '(DC2Type:json)'/ COMMENT '(DC2Type:json)'/g\" " +
+				"-e \"s/ DEFAULT ([^)]*) COMMENT '(DC2Type:json)'/ COMMENT '(DC2Type:json)'/g\" " +
+				"-e \"s/ DEFAULT '[^']*'\\( \\+COMMENT\\)/ \\1/g\" " +
+				"-e \"s/ DEFAULT ([^)]*)\\( \\+COMMENT\\)/ \\1/g\" " +
+				"-e \"s/ DEFAULT '[^']*'\\( \\+CHECK\\)/ \\1/g\" " +
+				"-e \"s/ DEFAULT ([^)]*)\\( \\+CHECK\\)/ \\1/g\" " +
+				"-e \"s/ DEFAULT [a-z_]*()\\( \\+CHECK\\)/ \\1/g\" " +
+				"-e \"s/ DEFAULT '[^']*'\\(,\\)/\\1/g\" " +
+				"-e \"s/ DEFAULT ([^)]*)\\(,\\)/\\1/g\" " +
+				"-e \"s/\\(json\\|text\\|blob\\|JSON\\|TEXT\\|BLOB\\) DEFAULT '[^']*'/\\1/g\" " +
+				"-e \"s/\\(json\\|text\\|blob\\|JSON\\|TEXT\\|BLOB\\) DEFAULT ([^)]*)/\\1/g\" " +
+				"-e \"s/\\(json\\|text\\|blob\\|JSON\\|TEXT\\|BLOB\\) DEFAULT [a-z_]*()\\( \\)/\\1\\2/g\" " +
+				"-e \"s/\\(json\\|text\\|blob\\|JSON\\|TEXT\\|BLOB\\) [a-z_]*()\\( \\)/\\1\\2/g\""
+			commandArgs = append(commandArgs, "mysqldump -h local_beach_mariadb -u root -ppassword --add-drop-trigger --compress --comments --dump-date --hex-blob --quote-names --routines --triggers --no-autocommit --no-tablespaces --skip-lock-tables --single-transaction --quick --databases "+database+" | "+sedPatterns+" | mysql -h local_beach_database -u root -ppassword")
 			output, err := exec.RunCommand("docker", commandArgs)
 			if err != nil {
 				log.Error(fmt.Sprintf("Failed to migrate database %s: %v", database, err))
