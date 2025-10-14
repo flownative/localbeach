@@ -145,40 +145,47 @@ func retrieveCloudStorageCredentials(instanceIdentifier string, projectNamespace
 	return nil, bucketName, privateKey
 }
 
-func writeLocalBeachComposeFile() {
-	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{mysqlDatabasePath}}", path.MySQLDatabase)
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
+func writeComposeFile(assetPath, outputFileName string, replacements map[string]string) error {
+	composeFileContent := readFileFromAssets(assetPath)
 
-	destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
-	if err != nil {
-		log.Error("failed creating docker-compose.yml: ", err)
-	} else {
-		_, err = destination.WriteString(composeFileContent)
-		if err != nil {
-			log.Error(err)
-		}
-
+	// Apply all replacements
+	for placeholder, value := range replacements {
+		composeFileContent = strings.ReplaceAll(composeFileContent, placeholder, value)
 	}
-	_ = destination.Close()
+
+	outputPath := filepath.Join(path.Base, outputFileName)
+	destination, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("failed creating %s: %w", outputFileName, err)
+	}
+	defer destination.Close()
+
+	_, err = destination.WriteString(composeFileContent)
+	if err != nil {
+		return fmt.Errorf("failed writing to %s: %w", outputFileName, err)
+	}
+
+	return nil
+}
+
+func writeLocalBeachComposeFile() {
+	replacements := map[string]string{
+		"{{mysqlDatabasePath}}": path.MySQLDatabase,
+		"{{certificatesPath}}":  path.Certificates,
+	}
+	if err := writeComposeFile("local-beach/docker-compose.yml", "docker-compose.yml", replacements); err != nil {
+		log.Error(err)
+	}
 }
 
 func writeMariaDBComposeFile() {
-	composeFileContent := readFileFromAssets("local-beach/mariadb-compose.yml")
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{mysqlDatabasePath}}", path.MySQLDatabase)
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{mariadbDatabasePath}}", path.MariaDBDatabase)
-
-	destination, err := os.Create(filepath.Join(path.Base, "mariadb-compose.yml"))
-	if err != nil {
-		log.Error("failed creating mariadb-compose.yml: ", err)
-	} else {
-		_, err = destination.WriteString(composeFileContent)
-		if err != nil {
-			log.Error(err)
-		}
-
+	replacements := map[string]string{
+		"{{mysqlDatabasePath}}":   path.MySQLDatabase,
+		"{{mariadbDatabasePath}}": path.MariaDBDatabase,
 	}
-	_ = destination.Close()
+	if err := writeComposeFile("local-beach/mariadb-compose.yml", "mariadb-compose.yml", replacements); err != nil {
+		log.Error(err)
+	}
 }
 
 func startLocalBeach() error {
@@ -230,24 +237,21 @@ func startLocalBeach() error {
 	return nil
 }
 
-func bringBeachDown() bool {
+func bringBeachDown() error {
 	instanceRoots, err := findInstanceRoots()
 	if err != nil {
-		log.Fatal(err)
-		return false
+		return fmt.Errorf("failed to find instance roots: %w", err)
 	}
 	for _, instanceRoot := range instanceRoots {
 		log.Info("Stopping instance in " + instanceRoot + "...")
 		sandbox, err := beachsandbox.GetSandbox(instanceRoot)
 		if err != nil && !errors.Is(err, beachsandbox.ErrNoFlowFound) {
-			log.Fatal(err)
-			return false
+			return fmt.Errorf("failed to get sandbox for %s: %w", instanceRoot, err)
 		}
 		commandArgs := []string{"compose", "-f", sandbox.DockerComposeFilePath, "rm", "--force", "--stop", "-v"}
 		output, err := exec.RunCommand("docker", commandArgs)
 		if err != nil {
-			log.Fatal(output)
-			return false
+			return fmt.Errorf("failed to stop instance in %s: %s", instanceRoot, output)
 		}
 	}
 
@@ -255,10 +259,9 @@ func bringBeachDown() bool {
 	commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "docker-compose.yml"), "rm", "--force", "--stop", "-v"}
 	output, err := exec.RunCommand("docker", commandArgs)
 	if err != nil {
-		log.Fatal(output)
-		return false
+		return fmt.Errorf("failed to stop reverse proxy and database: %s", output)
 	}
-	return true
+	return nil
 }
 
 func findInstanceRoots() ([]string, error) {
