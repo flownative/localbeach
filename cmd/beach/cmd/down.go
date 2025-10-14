@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -32,5 +33,7 @@ func init() {
 }
 
 func handleDownRun(cmd *cobra.Command, args []string) {
-	bringBeachDown()
+	if err := bringBeachDown(); err != nil {
+		log.Fatal(err)
+	}
 }
