@@ -119,13 +119,35 @@ jobs:
           INPUT_LINUX_SHA256SUM: ${{ needs.build.outputs.linux_sha256sum }}
 
       - name: Commit update
+        shell: bash
         run: |
+          set -x
           cd homebrew
-          git config --local --unset-all "http.https://github.com/.extraheader"
-          git config --global user.email "ops@flownative.com"
-          git config --global user.name "Flownative Bot"
+      
+          # Remove any checkout extra header left by actions/checkout (ignore errors)
+          git config --local --unset-all "http.https://github.com/.extraheader" || true
+      
+          # Use repo-local config so we don't change runner globals
+          git config user.email "ops@flownative.com"
+          git config user.name "Flownative Bot"
+      
+          # Show what changed for debugging
+          echo "Formula file content (first + last 10 lines):"
+          head -n 10 Formula/localbeach.rb || true
+          tail -n 10 Formula/localbeach.rb || true
+      
           git add Formula/localbeach.rb
-          git commit -m 'localbeach: update to ${{ github.ref }}'
+      
+          echo "Git status (porcelain):"
+          git status --porcelain
+      
+          # Only commit if there are staged changes
+          if git diff --cached --quiet --exit-code; then
+            echo "No changes to commit. Skipping commit."
+            exit 0
+          fi
+      
+          git commit -m "localbeach: update to ${{ github.ref }}"
 
       - name: Push to git
         uses: ad-m/github-push-action@v1
