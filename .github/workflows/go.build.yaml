@@ -17,12 +17,12 @@ jobs:
     steps:
 
       - name: Check out code into the Go module directory
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Set up Go 1.24
+      - name: Set up Go 1.25
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25'
         id: go
 
       - name: Get dependencies
@@ -44,19 +44,19 @@ jobs:
           done
 
       - name: Archive build result (darwin/amd64)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: beach-macos-intel
           path: beach_darwin_amd64.zip
 
       - name: Archive build result (darwin/arm64)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: beach-macos-arm
           path: beach_darwin_arm64.zip
 
       - name: Archive build result (linux)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: beach-linux
           path: beach_linux_amd64.zip
@@ -91,10 +91,10 @@ jobs:
     steps:
 
       - name: Check out Go code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Check out Homebrew code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: flownative/homebrew-flownative
           path: homebrew
@@ -107,7 +107,7 @@ jobs:
 
       # see: https://github.com/bluwy/substitute-string-action
       - name: Substitute Homebrew variables
-        uses: bluwy/substitute-string-action@v3
+        uses: bluwy/substitute-string-action@v4
         with:
           _input-file: homebrew/Formula/localbeach.rb
           _output-file: homebrew/Formula/localbeach.rb
@@ -128,7 +128,7 @@ jobs:
           git commit -m 'localbeach: update to ${{ github.ref }}'
 
       - name: Push to git
-        uses: ad-m/github-push-action@v0.8.0
+        uses: ad-m/github-push-action@v1
         with:
           github_token: ${{ secrets.FLOWNATIVE_BOT_TOKEN }}
           repository: flownative/homebrew-flownative
