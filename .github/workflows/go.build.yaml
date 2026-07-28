@@ -96,6 +96,7 @@ jobs:
       - name: Check out Homebrew code
         uses: actions/checkout@v6
         with:
+          token: ${{ secrets.FLOWNATIVE_BOT_TOKEN }}
           repository: flownative/homebrew-flownative
           path: homebrew
 
