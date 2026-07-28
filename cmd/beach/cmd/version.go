@@ -16,6 +16,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/flownative/localbeach/pkg/version"
 	"github.com/spf13/cobra"
 )
