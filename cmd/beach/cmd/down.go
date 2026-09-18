@@ -15,15 +15,6 @@
 package cmd
 
 import (
-	"errors"
-	"os"
-	"path/filepath"
-	"strings"
-
-	"github.com/flownative/localbeach/pkg/path"
-
-	"github.com/flownative/localbeach/pkg/beachsandbox"
-	"github.com/flownative/localbeach/pkg/exec"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -42,75 +33,7 @@ func init() {
 }
 
 func handleDownRun(cmd *cobra.Command, args []string) {
-	instanceRoots, err := findInstanceRoots()
-	if err != nil {
+	if err := bringBeachDown(); err != nil {
 		log.Fatal(err)
-		return
 	}
-	for _, instanceRoot := range instanceRoots {
-		log.Info("Stopping instance in " + instanceRoot + "...")
-		sandbox, err := beachsandbox.GetSandbox(instanceRoot)
-		if err != nil && !errors.Is(err, beachsandbox.ErrNoFlowFound) {
-			log.Fatal(err)
-			return
-		}
-		commandArgs := []string{"compose", "-f", sandbox.DockerComposeFilePath, "rm", "--force", "--stop", "-v"}
-		output, err := exec.RunCommand("docker", commandArgs)
-		if err != nil {
-			log.Fatal(output)
-			return
-		}
-	}
-
-	log.Info("Stopping reverse proxy and database server ...")
-	commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "docker-compose.yml"), "rm", "--force", "--stop", "-v"}
-	output, err := exec.RunCommand("docker", commandArgs)
-	if err != nil {
-		log.Fatal(output)
-		return
-	}
-
-	return
-}
-
-func findInstanceRoots() ([]string, error) {
-	var configurationFiles []string
-
-	output, err := exec.RunCommand("docker", []string{"ps", "-q", "--filter", "network=local_beach"})
-	if err != nil {
-		return nil, errors.New(output)
-	}
-	for _, line := range strings.Split(output, "\n") {
-		containerID := strings.TrimSpace(line)
-		if len(containerID) > 0 {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
-			if err != nil {
-				return nil, errors.New(output)
-			}
-			projectDirectory := filepath.Dir(strings.TrimSpace(output))
-			if containsLocalBeachInstance(projectDirectory) {
-				configurationFiles = append(configurationFiles, projectDirectory)
-			}
-		}
-	}
-
-	return removeDuplicates(configurationFiles), nil
-}
-
-func containsLocalBeachInstance(path string) bool {
-	path = filepath.Join(path, ".localbeach.docker-compose.yaml")
-	_, err := os.Stat(path)
-	return !errors.Is(err, os.ErrNotExist)
-}
-
-func removeDuplicates(strSlice []string) []string {
-	allKeys := make(map[string]bool)
-	var list []string
-	for _, item := range strSlice {
-		if _, value := allKeys[item]; !value {
-			allKeys[item] = true
-			list = append(list, item)
-		}
-	}
-	return list
 }
