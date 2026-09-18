@@ -7,10 +7,12 @@ Under the hood, it's using Docker, and the official Beach Docker images (Nginx, 
 account nor be a  [Flownative](https://www.flownative.com) customer in order to use Local Beach because Local Beach is
 free (as in free beer, or free coffee).
 
-This README currently only contains basic information about Local Beach. You may find more information on the 
-[Local Beach website](https://www.flownative.com/localbeach). 
+This README currently only contains basic information about Local Beach. You may find more information on the
+[Local Beach website](https://www.flownative.com/localbeach).
 
-These are the [setup instructions](https://www.flownative.com/en/documentation/guides/localbeach/local-beach-setup-docker-based-neos-development-howto.html) for Local Beach.
+These are
+the [setup instructions](https://www.flownative.com/en/documentation/guides/localbeach/local-beach-setup-docker-based-neos-development-howto.html)
+for Local Beach.
 Currently, automatic installation via Homebrew is supported.
 
 tldr;
@@ -26,7 +28,7 @@ beach version
 Some random notes about the internals of Local Beach:
 
 - `beach setup` is automatically invoked by Homebrew when Local Beach is installed
-- the base path for Local Beach is `~/Library/Application Support/Flownative/Local Beach/` on macOS and 
+- the base path for Local Beach is `~/Library/Application Support/Flownative/Local Beach/` on macOS and
   `~/.Flownative/Local Beach/` on other systems
 
 ## Build
@@ -44,7 +46,7 @@ For a slightly quicker build, use `make compile`.
 
 ## Credits and Support
 
-This library was developed by Robert Lemke with major contributions by Karsten Dambekalns and Christian Müller. Feel 
-free to suggest new features, report bugs or provide bug fixes in our GitHub  project.
+This library was developed by Robert Lemke with major contributions by Karsten Dambekalns and Christian Müller. Feel
+free to suggest new features, report bugs or provide bug fixes in our GitHub project.
 
 Copyright 2019-2025 Robert Lemke, Karsten Dambekalns, Christian Müller, licensed under the Apache License, version 2.0.

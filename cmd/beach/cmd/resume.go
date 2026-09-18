@@ -15,11 +15,12 @@
 package cmd
 
 import (
+	"path/filepath"
+
 	"github.com/flownative/localbeach/pkg/exec"
 	"github.com/flownative/localbeach/pkg/path"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"path/filepath"
 )
 
 // resumeCmd represents the resume command
