@@ -4,7 +4,7 @@ networks:
 
 services:
   webserver:
-    image: ${BEACH_WEBSERVER_IMAGE:-flownative/nginx}:${BEACH_WEBSERVER_IMAGE_VERSION:-4}
+    image: ${BEACH_WEBSERVER_IMAGE:-flownative/nginx}:${BEACH_WEBSERVER_IMAGE_VERSION:-5}
     container_name: ${BEACH_PROJECT_NAME:?Please specify a Beach project name as BEACH_PROJECT_NAME}_webserver
     networks:
       - local_beach
@@ -28,7 +28,7 @@ services:
       - BEACH_APPLICATION_PATH=${BEACH_APPLICATION_PATH:-/application}
 
   php:
-    image: ${BEACH_PHP_IMAGE:-flownative/beach-php}:${BEACH_PHP_IMAGE_VERSION:-8.2}
+    image: ${BEACH_PHP_IMAGE:-flownative/beach-php}:${BEACH_PHP_IMAGE_VERSION:-8.5}
     container_name: ${BEACH_PROJECT_NAME:?Please specify a Beach project name as BEACH_PROJECT_NAME}_php
 
     networks:
