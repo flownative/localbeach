@@ -17,7 +17,6 @@ package beachsandbox
 import (
 	"errors"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -38,15 +37,17 @@ func detectProjectRootPathFromWorkingDir() (rootPath string, err error) {
 }
 
 func detectProjectRootPath(currentPath string) (projectRootPath string, err error) {
-	projectRootPath = path.Clean(currentPath)
+	projectRootPath = filepath.Clean(currentPath)
+	parentPath := filepath.Dir(projectRootPath)
 
 	if _, err := os.Stat(filepath.Join(projectRootPath, ".localbeach.docker-compose.yaml")); err == nil {
 		return projectRootPath, err
-	} else if projectRootPath == "/" {
+	} else if parentPath == projectRootPath {
+		// We have reached the root folder
 		return "", ErrNoLocalBeachConfigurationFound
 	}
 
-	return detectProjectRootPath(path.Dir(projectRootPath))
+	return detectProjectRootPath(parentPath)
 }
 
 func loadLocalBeachEnvironment(projectRootPath string) (err error) {
