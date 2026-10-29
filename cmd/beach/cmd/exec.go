@@ -55,8 +55,16 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 	}
 	// Note: No -i flag when not TTY since stdin isn't connected in RunCommand
 	commandArgs = append(commandArgs, sandbox.ProjectName+"_php")
-	if len(args) > 0 {
-		commandArgs = append(commandArgs, "bash", "-l", "-c", strings.Trim(fmt.Sprint(args), "[]"))
+	if len(args) == 1 {
+		// A single argument is run as a shell command line, e.g. "cmd1 && cmd2"
+		commandArgs = append(commandArgs, "bash", "-l", "-c", args[0])
+	} else if len(args) > 1 {
+		// Multiple arguments are quoted, so that they reach the command unchanged
+		quotedArgs := make([]string, len(args))
+		for i, arg := range args {
+			quotedArgs[i] = shellQuote(arg)
+		}
+		commandArgs = append(commandArgs, "bash", "-l", "-c", strings.Join(quotedArgs, " "))
 	} else {
 		commandArgs = append(commandArgs, "bash")
 	}
@@ -75,4 +83,9 @@ func handleExecRun(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 	}
+}
+
+// shellQuote wraps the given string in single quotes for use in a POSIX shell
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
 }
