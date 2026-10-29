@@ -9,8 +9,8 @@ services:
     networks:
       - local_beach
     ports:
-      - "80:80"
-      - "443:443"
+      - "127.0.0.1:80:80"
+      - "127.0.0.1:443:443"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - {{certificatesPath}}:/etc/nginx/certs
@@ -31,5 +31,5 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=password
     ports:
-      - 3307:3306
+      - "127.0.0.1:3307:3306"
     command: 'mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci'
