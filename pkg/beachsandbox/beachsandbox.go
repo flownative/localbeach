@@ -15,10 +15,15 @@
 package beachsandbox
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
+
+var validProjectName = regexp.MustCompile(`^[a-zA-Z0-9-]*$`)
+var validFlowRootPath = regexp.MustCompile(`^[a-zA-Z0-9._/-]*$`)
 
 type BeachSandbox struct {
 	ProjectName                        string ``
@@ -38,6 +43,14 @@ func (sandbox *BeachSandbox) Init(rootPath string) error {
 	sandbox.DockerComposeFilePath = filepath.Join(sandbox.ProjectRootPath, ".localbeach.docker-compose.yaml")
 	sandbox.ProjectName = os.Getenv("BEACH_PROJECT_NAME")
 	sandbox.FlowRootPath = strings.Trim(os.Getenv("BEACH_FLOW_ROOTPATH"), "/")
+
+	if !validProjectName.MatchString(sandbox.ProjectName) {
+		return errors.New("invalid BEACH_PROJECT_NAME \"" + sandbox.ProjectName + "\", only letters, digits and dashes are allowed")
+	}
+	if !validFlowRootPath.MatchString(sandbox.FlowRootPath) || strings.Contains(sandbox.FlowRootPath, "..") {
+		return errors.New("invalid BEACH_FLOW_ROOTPATH \"" + sandbox.FlowRootPath + "\"")
+	}
+
 	sandbox.ProjectDataPersistentResourcesPath = filepath.Join(sandbox.ProjectRootPath, sandbox.FlowRootPath, "Data/Persistent/Resources")
 
 	if info, err := os.Stat(filepath.Join(sandbox.ProjectRootPath, sandbox.FlowRootPath, "flow")); err == nil && !info.IsDir() {

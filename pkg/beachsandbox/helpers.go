@@ -70,6 +70,10 @@ func loadLocalBeachEnvironment(projectRootPath string) (err error) {
 					if len(nameAndValue) != 2 {
 						return errors.New("failed parsing environment variable " + nameAndValue[0])
 					}
+					if isProtectedEnvironmentVariable(nameAndValue[0]) {
+						log.Warn("Ignoring environment variable " + nameAndValue[0] + " in " + envPathAndFilename + " because it could alter how Local Beach runs commands")
+						continue
+					}
 					if err := os.Setenv(nameAndValue[0], nameAndValue[1]); err != nil {
 						return errors.New("failed setting environment variable " + nameAndValue[0])
 					}
@@ -79,4 +83,19 @@ func loadLocalBeachEnvironment(projectRootPath string) (err error) {
 	}
 
 	return
+}
+
+// isProtectedEnvironmentVariable returns true for variables which must not be set by project environment
+// files, because they could make Local Beach or Docker run arbitrary programs on the host
+func isProtectedEnvironmentVariable(name string) bool {
+	switch name {
+	case "PATH", "HOME", "SHELL", "BASH_ENV", "ENV", "GODEBUG", "GOTOOLCHAIN":
+		return true
+	}
+	for _, prefix := range []string{"LD_", "DYLD_", "DOCKER_"} {
+		if strings.HasPrefix(name, prefix) && name != "DOCKER_DEFAULT_PLATFORM" {
+			return true
+		}
+	}
+	return false
 }
