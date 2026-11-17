@@ -27,9 +27,21 @@ beach version
 
 Some random notes about the internals of Local Beach:
 
-- `beach setup` is automatically invoked by Homebrew when Local Beach is installed
-- the base path for Local Beach is `~/Library/Application Support/Flownative/Local Beach/` on macOS and
-  `~/.Flownative/Local Beach/` on other systems
+- `beach setup` runs automatically the first time Local Beach is started, when its base path does not exist yet
+- the base path for Local Beach is `~/.LocalBeach/`; the database server keeps its data in `~/.LocalBeach/MySQL/`
+
+### Migration from MariaDB to MySQL
+
+Local Beach uses MySQL 8.0, like Beach does. Earlier versions used MariaDB 10.11 and kept the data in
+`~/.LocalBeach/MariaDB/`. If that directory exists, `beach start` (or `beach setup`) offers to migrate all
+databases to MySQL once:
+
+- all running instances, the reverse proxy and the database server are stopped
+- an existing `~/.LocalBeach/MySQL/` is moved aside to `~/.LocalBeach/MySQL.backup-<timestamp>/`
+- every database is dumped from MariaDB, converted for MySQL and imported; then the row counts of all tables are compared
+- the MariaDB data is kept, its directory is renamed to `~/.LocalBeach/MariaDB.migrated/`
+
+Without a terminal, `beach start` does not migrate; run `beach setup --yes` to migrate without being asked.
 
 ## Build
 

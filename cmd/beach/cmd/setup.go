@@ -17,7 +17,6 @@ package cmd
 import (
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/flownative/localbeach/pkg/exec"
 	"github.com/flownative/localbeach/pkg/path"
@@ -34,12 +33,20 @@ var setupCmd = &cobra.Command{
 	Run:   handleSetupRun,
 }
 
+var setupAssumeYes bool
+
 func init() {
 	rootCmd.AddCommand(setupCmd)
+	setupCmd.Flags().BoolVarP(&setupAssumeYes, "yes", "y", false, "Migrate databases from MariaDB to MySQL without asking")
 }
 
 func handleSetupRun(cmd *cobra.Command, args []string) {
-	_ = setupLocalBeach()
+	if err := setupLocalBeach(); err != nil {
+		log.Fatal(err)
+	}
+	if err := migrateMariaDBIfNeeded(setupAssumeYes); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func migrateOldBase() error {
@@ -66,7 +73,7 @@ func migrateOldBase() error {
 		}
 
 		log.Info("moving database data")
-		err = os.Rename(filepath.Join(path.OldBase, "MariaDB"), path.Database)
+		err = os.Rename(filepath.Join(path.OldBase, "MariaDB"), path.MariaDBDatabase)
 		if err != nil {
 			if os.IsNotExist(err) {
 				log.Error(err)
@@ -114,27 +121,13 @@ func setupLocalBeach() error {
 		log.Error(err)
 	}
 
-	log.Debug("creating directory for databases at " + path.Database)
-	err = os.MkdirAll(path.Database, os.ModePerm)
+	log.Debug("creating directory for databases at " + path.MySQLDatabase)
+	err = os.MkdirAll(path.MySQLDatabase, os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		log.Error(err)
 	}
 
-	composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
-	composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
-
-	destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
-	if err != nil {
-		log.Error("failed creating docker-compose.yml: ", err)
-	} else {
-		_, err = destination.WriteString(composeFileContent)
-		if err != nil {
-			log.Error(err)
-		}
-
-	}
-	_ = destination.Close()
+	writeLocalBeachComposeFile()
 
 	return nil
 }

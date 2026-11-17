@@ -27,7 +27,8 @@ import (
 var OldBase = ""
 var Base = ""
 var Certificates = ""
-var Database = ""
+var MariaDBDatabase = ""
+var MySQLDatabase = ""
 
 func init() {
 	homeDir, err := os.UserHomeDir()
@@ -40,5 +41,6 @@ func init() {
 	OldBase = filepath.Join(homeDir, "Library", "Application Support", "Flownative", "Local Beach")
 	Base = filepath.Join(homeDir, ".LocalBeach")
 	Certificates = filepath.Join(Base, "Certificates")
-	Database = filepath.Join(Base, "MariaDB")
+	MariaDBDatabase = filepath.Join(Base, "MariaDB")
+	MySQLDatabase = filepath.Join(Base, "MySQL")
 }

@@ -26,6 +26,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/flownative/localbeach/pkg/beachsandbox"
 	"github.com/flownative/localbeach/pkg/path"
 
 	"github.com/flownative/localbeach/pkg/exec"
@@ -145,6 +146,39 @@ func retrieveCloudStorageCredentials(instanceIdentifier string, projectNamespace
 	return nil, bucketName, privateKey
 }
 
+func writeComposeFile(assetPath, outputFileName string, replacements map[string]string) error {
+	composeFileContent := readFileFromAssets(assetPath)
+
+	// Apply all replacements
+	for placeholder, value := range replacements {
+		composeFileContent = strings.ReplaceAll(composeFileContent, placeholder, value)
+	}
+
+	outputPath := filepath.Join(path.Base, outputFileName)
+	destination, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("failed creating %s: %w", outputFileName, err)
+	}
+	defer destination.Close()
+
+	_, err = destination.WriteString(composeFileContent)
+	if err != nil {
+		return fmt.Errorf("failed writing to %s: %w", outputFileName, err)
+	}
+
+	return nil
+}
+
+func writeLocalBeachComposeFile() {
+	replacements := map[string]string{
+		"{{mysqlDatabasePath}}": path.MySQLDatabase,
+		"{{certificatesPath}}":  path.Certificates,
+	}
+	if err := writeComposeFile("local-beach/docker-compose.yml", "docker-compose.yml", replacements); err != nil {
+		log.Error(err)
+	}
+}
+
 func startLocalBeach() error {
 	_, err := os.Stat(path.Base)
 	if os.IsNotExist(err) {
@@ -154,6 +188,16 @@ func startLocalBeach() error {
 		}
 	}
 
+	if err := migrateMariaDBIfNeeded(false); err != nil {
+		return err
+	}
+
+	return startLocalBeachInfrastructure()
+}
+
+// startLocalBeachInfrastructure starts the reverse proxy and the database
+// server, unless both are running already
+func startLocalBeachInfrastructure() error {
 	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
 	if err != nil {
 		return errors.New("failed checking status of container local_beach_nginx container, maybe the Docker daemon is not running")
@@ -165,21 +209,7 @@ func startLocalBeach() error {
 	}
 
 	if len(nginxStatusOutput) == 0 || len(databaseStatusOutput) == 0 {
-		composeFileContent := readFileFromAssets("local-beach/docker-compose.yml")
-		composeFileContent = strings.ReplaceAll(composeFileContent, "{{databasePath}}", path.Database)
-		composeFileContent = strings.ReplaceAll(composeFileContent, "{{certificatesPath}}", path.Certificates)
-
-		destination, err := os.Create(filepath.Join(path.Base, "docker-compose.yml"))
-		if err != nil {
-			log.Error("failed creating docker-compose.yml: ", err)
-		} else {
-			_, err = destination.WriteString(composeFileContent)
-			if err != nil {
-				log.Error(err)
-			}
-
-		}
-		_ = destination.Close()
+		writeLocalBeachComposeFile()
 
 		log.Info("Starting reverse proxy and database server ...")
 		commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "docker-compose.yml"), "up", "--remove-orphans", "-d"}
@@ -189,21 +219,113 @@ func startLocalBeach() error {
 		}
 
 		log.Info("Waiting for database server ...")
-		tries := 1
-		for {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
-			if err != nil {
-				return errors.New("failed to check for database server container health")
-			}
-			if strings.TrimSpace(output) == "healthy" {
-				break
-			}
-			if tries == 10 {
-				return errors.New("timeout waiting for database server to start")
-			}
-			tries++
-			time.Sleep(3 * time.Second)
+		if err := waitForHealthyContainer("local_beach_database"); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// stopLocalBeachInfrastructure stops the reverse proxy and the database server
+func stopLocalBeachInfrastructure() {
+	composeFilePath := filepath.Join(path.Base, "docker-compose.yml")
+	if _, err := os.Stat(composeFilePath); err != nil {
+		return
+	}
+	commandArgs := []string{"compose", "-f", composeFilePath, "rm", "--force", "--stop", "-v"}
+	if output, err := exec.RunCommand("docker", commandArgs); err != nil {
+		log.Error("Failed to stop reverse proxy and database server: ", output)
+	}
+}
+
+// waitForHealthyContainer waits until the health check of the given container
+// succeeds. The first start of MySQL initializes its data directory, which
+// may take a while.
+func waitForHealthyContainer(containerName string) error {
+	const timeout = 3 * time.Minute
+	const interval = 2 * time.Second
+
+	deadline := time.Now().Add(timeout)
+	for {
+		output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", containerName})
+		if err != nil {
+			return fmt.Errorf("failed to check health of container %s: %s", containerName, strings.TrimSpace(output))
+		}
+		if strings.TrimSpace(output) == "healthy" {
+			return nil
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("timeout waiting for container %s to become healthy, see \"docker logs %s\"", containerName, containerName)
+		}
+		time.Sleep(interval)
+	}
+}
+
+func bringBeachDown() error {
+	instanceRoots, err := findInstanceRoots()
+	if err != nil {
+		return fmt.Errorf("failed to find instance roots: %w", err)
+	}
+	for _, instanceRoot := range instanceRoots {
+		log.Info("Stopping instance in " + instanceRoot + "...")
+		sandbox, err := beachsandbox.GetSandbox(instanceRoot)
+		if err != nil && !errors.Is(err, beachsandbox.ErrNoFlowFound) {
+			return fmt.Errorf("failed to get sandbox for %s: %w", instanceRoot, err)
+		}
+		commandArgs := []string{"compose", "-f", sandbox.DockerComposeFilePath, "rm", "--force", "--stop", "-v"}
+		output, err := exec.RunCommand("docker", commandArgs)
+		if err != nil {
+			return fmt.Errorf("failed to stop instance in %s: %s", instanceRoot, output)
+		}
+	}
+
+	log.Info("Stopping reverse proxy and database server ...")
+	commandArgs := []string{"compose", "-f", filepath.Join(path.Base, "docker-compose.yml"), "rm", "--force", "--stop", "-v"}
+	output, err := exec.RunCommand("docker", commandArgs)
+	if err != nil {
+		return fmt.Errorf("failed to stop reverse proxy and database: %s", output)
+	}
+	return nil
+}
+
+func findInstanceRoots() ([]string, error) {
+	var configurationFiles []string
+
+	output, err := exec.RunCommand("docker", []string{"ps", "-q", "--filter", "network=local_beach"})
+	if err != nil {
+		return nil, errors.New(output)
+	}
+	for _, line := range strings.Split(output, "\n") {
+		containerID := strings.TrimSpace(line)
+		if len(containerID) > 0 {
+			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{index .Config.Labels \"com.docker.compose.project.config_files\"}}", containerID})
+			if err != nil {
+				return nil, errors.New(output)
+			}
+			projectDirectory := filepath.Dir(strings.TrimSpace(output))
+			if containsLocalBeachInstance(projectDirectory) {
+				configurationFiles = append(configurationFiles, projectDirectory)
+			}
+		}
+	}
+
+	return removeDuplicates(configurationFiles), nil
+}
+
+func containsLocalBeachInstance(path string) bool {
+	path = filepath.Join(path, ".localbeach.docker-compose.yaml")
+	_, err := os.Stat(path)
+	return !errors.Is(err, os.ErrNotExist)
+}
+
+func removeDuplicates(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	var list []string
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }

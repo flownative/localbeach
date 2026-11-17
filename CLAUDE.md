@@ -37,8 +37,7 @@ Use this during development when assets haven't changed.
 
 ### Testing
 
-Currently no test files exist in the project. When running `go test ./...`, note that there's a known build failure in
-`cmd/beach/cmd/resource-upload.go:84:3` due to a Printf formatting directive in a logrus.Fatal call.
+Run `go test ./...`. Unit tests exist for the conversion of MariaDB dumps (`cmd/beach/cmd/mariadb-sql-filter_test.go`).
 
 ## Architecture
 
@@ -82,13 +81,11 @@ Local Beach uses a two-tier Docker setup:
 
 ### Important File Locations
 
-**macOS:**
-
-- Base path: `~/Library/Application Support/Flownative/Local Beach/`
-
-**Linux/Other:**
-
-- Base path: `~/.Flownative/Local Beach/`
+- Base path: `~/.LocalBeach/` (database data in `~/.LocalBeach/MySQL/`)
+- Old base paths, migrated automatically: `~/Library/Application Support/Flownative/Local Beach/` (macOS),
+  `~/.Flownative/Local Beach/` (Linux)
+- `~/.LocalBeach/MariaDB/` holds data of versions before the switch to MySQL; `beach start` and `beach setup` offer to
+  migrate it (see `cmd/beach/cmd/mariadb-migration.go`)
 
 These paths are defined in `pkg/path/path_darwin.go` and `pkg/path/path_linux.go`.
 

@@ -1,0 +1,23 @@
+# Used only while migrating the databases of Local Beach from MariaDB to MySQL
+networks:
+  local_beach:
+    external: true
+
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: local_beach_mariadb
+    networks:
+      - local_beach
+    volumes:
+      - {{mariadbDatabasePath}}:/var/lib/mysql
+    healthcheck:
+      test: "mariadb --host=127.0.0.1 --user=root --password=password --execute \"SELECT 1;\""
+      interval: 2s
+      timeout: 2s
+      retries: 60
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci

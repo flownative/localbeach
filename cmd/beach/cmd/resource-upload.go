@@ -81,7 +81,7 @@ func handleResourceUploadRun(cmd *cobra.Command, args []string) {
 	}
 	_, err = os.Stat(sourceResourcesPath)
 	if err != nil {
-		log.Fatal("The path %v does not exist", sourceResourcesPath)
+		log.Fatalf("The path %v does not exist", sourceResourcesPath)
 		return
 	}
 
