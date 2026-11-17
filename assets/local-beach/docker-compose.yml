@@ -24,7 +24,8 @@ services:
     volumes:
       - {{mysqlDatabasePath}}:/var/lib/mysql
     healthcheck:
-      test: "/usr/bin/mysql --user=root --password=password --execute \"SHOW DATABASES;\""
+      # Connect via TCP: while MySQL initializes a new data directory, it runs a temporary server without networking
+      test: "mysql --host=127.0.0.1 --user=root --password=password --execute \"SHOW DATABASES;\""
       interval: 3s
       timeout: 1s
       retries: 10

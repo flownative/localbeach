@@ -179,16 +179,6 @@ func writeLocalBeachComposeFile() {
 	}
 }
 
-func writeMariaDBComposeFile() {
-	replacements := map[string]string{
-		"{{mysqlDatabasePath}}":   path.MySQLDatabase,
-		"{{mariadbDatabasePath}}": path.MariaDBDatabase,
-	}
-	if err := writeComposeFile("local-beach/mariadb-compose.yml", "mariadb-compose.yml", replacements); err != nil {
-		log.Error(err)
-	}
-}
-
 func startLocalBeach() error {
 	_, err := os.Stat(path.Base)
 	if os.IsNotExist(err) {
@@ -198,6 +188,16 @@ func startLocalBeach() error {
 		}
 	}
 
+	if err := migrateMariaDBIfNeeded(false); err != nil {
+		return err
+	}
+
+	return startLocalBeachInfrastructure()
+}
+
+// startLocalBeachInfrastructure starts the reverse proxy and the database
+// server, unless both are running already
+func startLocalBeachInfrastructure() error {
 	nginxStatusOutput, err := exec.RunCommand("docker", []string{"ps", "--filter", "name=local_beach_nginx", "--filter", "status=running", "-q"})
 	if err != nil {
 		return errors.New("failed checking status of container local_beach_nginx container, maybe the Docker daemon is not running")
@@ -219,23 +219,46 @@ func startLocalBeach() error {
 		}
 
 		log.Info("Waiting for database server ...")
-		tries := 1
-		for {
-			output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", "local_beach_database"})
-			if err != nil {
-				return errors.New("failed to check for database server container health")
-			}
-			if strings.TrimSpace(output) == "healthy" {
-				break
-			}
-			if tries == 10 {
-				return errors.New("timeout waiting for database server to start")
-			}
-			tries++
-			time.Sleep(3 * time.Second)
+		if err := waitForHealthyContainer("local_beach_database"); err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// stopLocalBeachInfrastructure stops the reverse proxy and the database server
+func stopLocalBeachInfrastructure() {
+	composeFilePath := filepath.Join(path.Base, "docker-compose.yml")
+	if _, err := os.Stat(composeFilePath); err != nil {
+		return
+	}
+	commandArgs := []string{"compose", "-f", composeFilePath, "rm", "--force", "--stop", "-v"}
+	if output, err := exec.RunCommand("docker", commandArgs); err != nil {
+		log.Error("Failed to stop reverse proxy and database server: ", output)
+	}
+}
+
+// waitForHealthyContainer waits until the health check of the given container
+// succeeds. The first start of MySQL initializes its data directory, which
+// may take a while.
+func waitForHealthyContainer(containerName string) error {
+	const timeout = 3 * time.Minute
+	const interval = 2 * time.Second
+
+	deadline := time.Now().Add(timeout)
+	for {
+		output, err := exec.RunCommand("docker", []string{"inspect", "-f", "{{.State.Health.Status}}", containerName})
+		if err != nil {
+			return fmt.Errorf("failed to check health of container %s: %s", containerName, strings.TrimSpace(output))
+		}
+		if strings.TrimSpace(output) == "healthy" {
+			return nil
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("timeout waiting for container %s to become healthy, see \"docker logs %s\"", containerName, containerName)
+		}
+		time.Sleep(interval)
+	}
 }
 
 func bringBeachDown() error {
