@@ -17,7 +17,7 @@ services:
     environment:
       - DEFAULT_HOST=hello.localbeach.net
   database:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: local_beach_database
     networks:
       - local_beach
