@@ -1,5 +1,6 @@
 /bin
 /assets/compiled.go
 /beach
+/result
 go_build_main_go
 .claude/settings.local.json

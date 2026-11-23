@@ -23,6 +23,18 @@ brew install localbeach
 beach version
 ``` 
 
+### Nix
+
+With [Nix](https://nixos.org) and flakes enabled, run Local Beach directly or install it into your profile:
+
+```
+nix run github:flownative/localbeach -- version
+nix profile install github:flownative/localbeach
+```
+
+The flake does not provide Docker; you need a working setup of Docker and Docker Compose. `nix develop` opens a shell
+with Go and the other tools needed to build Local Beach.
+
 ## Internals
 
 Some random notes about the internals of Local Beach:
