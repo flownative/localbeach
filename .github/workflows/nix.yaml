@@ -1,0 +1,70 @@
+name: Nix
+on:
+  pull_request:
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+      - 'flake.nix'
+      - 'flake.lock'
+permissions:
+  contents: read
+jobs:
+
+  vendor-hash:
+    name: Update vendorHash
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@382a9ed9481c7c1f94f68b72ef105b3417c73877 # v32.1.0
+
+      - name: Update vendorHash in flake.nix
+        run: |
+          fake_hash="sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+          sed -i -E "s|vendorHash = \"[^\"]*\"|vendorHash = \"${fake_hash}\"|" flake.nix
+          new_hash=$(nix build .#default.goModules 2>&1 | grep -oP 'got:\s+\K\S+' || true)
+          if [[ -z "${new_hash}" ]]; then
+            echo "Could not determine vendorHash"
+            exit 1
+          fi
+          sed -i "s|${fake_hash}|${new_hash}|" flake.nix
+
+      - name: Build
+        run: |
+          nix build
+          ./result/bin/beach version
+
+      - name: Commit update
+        shell: bash
+        env:
+          IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+        run: |
+          set -x
+
+          # Only commit if vendorHash has changed
+          if git diff --quiet --exit-code flake.nix; then
+            echo "vendorHash is up to date. Skipping commit."
+            exit 0
+          fi
+
+          # Pushing to the branch of a pull request from a fork is not possible
+          if [[ "${IS_FORK}" == "true" ]]; then
+            git diff flake.nix
+            echo "vendorHash in flake.nix is outdated, please update it as shown above."
+            exit 1
+          fi
+
+          # Use repo-local config so we don't change runner globals
+          git config user.email "ops@flownative.com"
+          git config user.name "Flownative Bot"
+
+          git commit -m "Update vendorHash in flake.nix" flake.nix
+          git push
