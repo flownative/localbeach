@@ -7,7 +7,7 @@ class Localbeach < Formula
   desc "Command-line tool for Flownative Beach"
   homepage "https://www.flownative.com/localbeach"
   version "{{VERSION}}"
-  license "GPL-3.0-or-later"
+  license "Apache-2.0"
 
   depends_on "mkcert"
   depends_on "nss"
